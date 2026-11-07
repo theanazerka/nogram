@@ -30,7 +30,7 @@ MTPROTO_DIR = vendor/MtProtoKit-4.9.1
 MTPROTO_MRC_FILES = $(MTPROTO_DIR)/AFHTTPClient.m $(MTPROTO_DIR)/AFHTTPRequestOperation.m $(MTPROTO_DIR)/AFJSONUtilities.m $(MTPROTO_DIR)/AFURLConnectionOperation.m
 MTPROTO_FILES = $(wildcard $(MTPROTO_DIR)/*.m)
 
-Telegram_FILES = compat/TGAvailabilityShim.m $(TG_APP_FILES) $(TG_LEGACYCOMPONENTS_FILES) $(TG_SSIGNALKIT_FILES) $(TG_LOTTIE_FILES) $(TG_VOIP_FILES) $(MTPROTO_FILES)
+Telegram_FILES = compat/TGAvailabilityShim.m compat/TGCrashCatcher.m $(TG_APP_FILES) $(TG_LEGACYCOMPONENTS_FILES) $(TG_SSIGNALKIT_FILES) $(TG_LOTTIE_FILES) $(TG_VOIP_FILES) $(MTPROTO_FILES)
 
 # Xcode resolved "Foo.h" through header maps; emulate that with -iquote for every header dir.
 TG_QUOTE_DIRS = . Share Telegraph Telegraph/API Telegraph/AdHoc Telegraph/thirdparty/ogg/ogg Telegraph/thirdparty/opusenc \
