@@ -85,7 +85,6 @@ static void TGHandleSignal(int sig)
 #pragma mark - Report screen
 
 static IMP gOriginalDidFinishLaunching;
-static UIWindow *gReportWindow;
 
 @interface TGCrashReportController : UIViewController
 @property (nonatomic, copy) void (^onContinue)(void);
@@ -131,60 +130,92 @@ static UIWindow *gReportWindow;
 
 @end
 
-static BOOL TGCallOriginalDidFinishLaunching(id self, SEL cmd, UIApplication *application, NSDictionary *options)
+static void TGScheduleStableMark(void)
 {
-    TGTraceMark("didFinishLaunching: begin");
-    BOOL result = ((BOOL (*)(id, SEL, UIApplication *, NSDictionary *))gOriginalDidFinishLaunching)(self, cmd, application, options);
-    TGTraceMark("didFinishLaunching: end");
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(10 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^
     {
         TGTraceMark("stable");
         // A clean run: forget the trace. Skipped +loads stay skipped until the next build.
         unlink(gTracePath);
     });
+}
+
+// Normal launches: trace the real app delegate's didFinishLaunching.
+static BOOL TGTracedDidFinishLaunching(id self, SEL cmd, UIApplication *application, NSDictionary *options)
+{
+    TGTraceMark("didFinishLaunching: begin");
+    BOOL result = ((BOOL (*)(id, SEL, UIApplication *, NSDictionary *))gOriginalDidFinishLaunching)(self, cmd, application, options);
+    TGTraceMark("didFinishLaunching: end");
+    TGScheduleStableMark();
     return result;
 }
 
-static BOOL TGDidFinishLaunching(id self, SEL cmd, UIApplication *application, NSDictionary *options)
-{
-    if (gPendingReport == nil)
-        return TGCallOriginalDidFinishLaunching(self, cmd, application, options);
+// After a failed launch the real app delegate is not even created (its -init may be what
+// crashes). A tiny stand-in delegate shows the report; "continue" builds the real one.
+static Class gRealDelegateClass;
+static IMP gOriginalAllocWithZone;
+static id gRealDelegate;
 
+@interface TGReportAppDelegate : UIResponder <UIApplicationDelegate>
+@property (nonatomic, strong) UIWindow *window;
+@end
+
+@implementation TGReportAppDelegate
+
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)options
+{
     [UIPasteboard generalPasteboard].string = gPendingReport;
-    gReportWindow = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
+    TGTraceMark("report shown");
+    self.window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
     TGCrashReportController *controller = [[TGCrashReportController alloc] init];
-    __weak id weakSelf = self;
+    __weak TGReportAppDelegate *weakSelf = self;
     controller.onContinue = ^
     {
         gPendingReport = nil;
-        gReportWindow.hidden = YES;
-        gReportWindow = nil;
-        TGCallOriginalDidFinishLaunching(weakSelf, cmd, application, options);
-        [[UIApplication sharedApplication].delegate.window makeKeyAndVisible];
+        weakSelf.window.hidden = YES;
+        // Restore normal allocation and start the real app.
+        method_setImplementation(class_getClassMethod(gRealDelegateClass, @selector(allocWithZone:)), gOriginalAllocWithZone);
+        TGTraceMark("continue: creating real app delegate");
+        gRealDelegate = [[gRealDelegateClass alloc] init];
+        application.delegate = gRealDelegate;
+        if ([gRealDelegate respondsToSelector:@selector(application:didFinishLaunchingWithOptions:)])
+            [gRealDelegate application:application didFinishLaunchingWithOptions:options];
+        if ([gRealDelegate respondsToSelector:@selector(applicationDidBecomeActive:)])
+            [gRealDelegate applicationDidBecomeActive:application];
+        [[gRealDelegate window] makeKeyAndVisible];
     };
-    gReportWindow.rootViewController = controller;
-    [gReportWindow makeKeyAndVisible];
-    TGTraceMark("report shown");
+    self.window.rootViewController = controller;
+    [self.window makeKeyAndVisible];
     return YES;
 }
 
-static void (*gOriginalSetDelegate)(id, SEL, id);
+@end
 
-static void TGSetDelegate(id self, SEL cmd, id delegate)
+static id TGReportAllocWithZone(id self, SEL cmd, NSZone *zone)
 {
-    static bool hooked = false;
-    if (!hooked && delegate != nil)
-    {
-        hooked = true;
-        TGTraceMarkf(@"app delegate: %@", NSStringFromClass([delegate class]));
-        Method method = class_getInstanceMethod([delegate class], @selector(application:didFinishLaunchingWithOptions:));
-        if (method != NULL)
-            gOriginalDidFinishLaunching = method_setImplementation(method, (IMP)TGDidFinishLaunching);
-    }
-    gOriginalSetDelegate(self, cmd, delegate);
+    if (gPendingReport != nil && self == gRealDelegateClass)
+        return [TGReportAppDelegate allocWithZone:zone];
+    return ((id (*)(id, SEL, NSZone *))gOriginalAllocWithZone)(self, cmd, zone);
 }
 
-#pragma mark - Install
+static void TGInstallDelegateHooks(void)
+{
+    gRealDelegateClass = NSClassFromString(@"TGAppDelegate");
+    if (gRealDelegateClass == Nil)
+        return;
+    Method didFinish = class_getInstanceMethod(gRealDelegateClass, @selector(application:didFinishLaunchingWithOptions:));
+    if (didFinish != NULL)
+        gOriginalDidFinishLaunching = method_setImplementation(didFinish, (IMP)TGTracedDidFinishLaunching);
+    if (gPendingReport != nil)
+    {
+        // Class method on the metaclass; added to TGAppDelegate itself so NSObject is untouched.
+        Class meta = object_getClass(gRealDelegateClass);
+        Method alloc = class_getClassMethod(gRealDelegateClass, @selector(allocWithZone:));
+        gOriginalAllocWithZone = method_getImplementation(alloc);
+        if (!class_addMethod(meta, @selector(allocWithZone:), (IMP)TGReportAllocWithZone, method_getTypeEncoding(alloc)))
+            method_setImplementation(class_getClassMethod(gRealDelegateClass, @selector(allocWithZone:)), (IMP)TGReportAllocWithZone);
+    }
+}
 
 @interface TGCrashCatcher : NSObject
 @end
@@ -250,8 +281,7 @@ static void TGSetDelegate(id self, SEL cmd, id delegate)
         for (size_t i = 0; i < sizeof(signals) / sizeof(signals[0]); i++)
             signal(signals[i], TGHandleSignal);
 
-        Method setDelegate = class_getInstanceMethod([UIApplication class], @selector(setDelegate:));
-        gOriginalSetDelegate = (void (*)(id, SEL, id))method_setImplementation(setDelegate, (IMP)TGSetDelegate);
+        TGInstallDelegateHooks();
     }
 }
 

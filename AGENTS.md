@@ -249,7 +249,7 @@ The owner cannot pull crash logs, so the app reports its own failures:
   `Library/Caches/launch-trace.txt`: `launch`, deferred `+load` begin/end per class, `app delegate`,
   `didFinishLaunching: begin/end`, then `stable` after 10 s, at which point the trace is deleted.
 - If the previous launch never reached `stable` (crash, exception, watchdog or jetsam kill), the next
-  launch shows the whole trace full screen **before** the app's own `didFinishLaunching` runs, and copies
+  launch shows the whole trace full screen through a stand-in app delegate (the real `TGAppDelegate` is not even allocated until "Продолжить" is pressed, since its `-init` may be what crashes), and copies
   it to the pasteboard. Ask the owner to paste it. Addresses: subtract the printed slide and symbolicate
   against the unstripped objects from CI.
 - **Upstream `+load` methods are deferred**: `tools/defer-loads.py` renamed all 53 of them to
