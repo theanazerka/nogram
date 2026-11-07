@@ -18,7 +18,10 @@ include sources.mk
 
 # Theos' vendor/include ships private-header replacements for UIKit, Foundation,
 # MobileCoreServices, MapKit... that shadow the SDK and break this code base.
-THEOS_VENDOR_INCLUDE_PATH := $(THEOS_PROJECT_DIR)/include
+# Keep only vendor/include/theos (needed by Theos' own Prefix.pch).
+TG_VENDOR_INCLUDE := $(THEOS_PROJECT_DIR)/.theos/vendor-include
+$(shell mkdir -p $(TG_VENDOR_INCLUDE) && ln -sfn $(THEOS)/vendor/include/theos $(TG_VENDOR_INCLUDE)/theos)
+THEOS_VENDOR_INCLUDE_PATH := $(TG_VENDOR_INCLUDE)
 
 APPLICATION_NAME = Telegram
 
