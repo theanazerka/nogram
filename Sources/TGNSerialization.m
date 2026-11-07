@@ -15,7 +15,12 @@
 
 - (id)parseMessage:(NSData *)data
 {
-    return TLParse(data, nil, NULL);
+    // MtProtoKit treats nil as a protocol error and drops the whole container,
+    // so never fail here: an unparseable push becomes a harmless placeholder.
+    id result = TLParse(data, nil, NULL);
+    if (result == nil && data.length != 0)
+        result = @{@"_": @"__unparsed"};
+    return result;
 }
 
 - (MTExportAuthorizationResponseParser)exportAuthorization:(int32_t)datacenterId data:(__autoreleasing NSData **)data
