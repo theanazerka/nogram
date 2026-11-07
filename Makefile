@@ -7,7 +7,7 @@
 #   make package TG_API_ID=12345 TG_API_HASH=0123456789abcdef0123456789abcdef
 # Without them the app asks for api_id / api_hash on first launch.
 
-TARGET := iphone:clang:9.3:6.0
+TARGET := iphone:clang:10.3:6.0
 ARCHS = armv7
 THEOS_PLATFORM_DEB_COMPRESSION_TYPE = gzip
 # Vendored MtProtoKit/AFNetworking are full of legacy warnings.

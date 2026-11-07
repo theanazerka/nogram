@@ -29,7 +29,7 @@
 ## Сборка локально
 
 ```sh
-export THEOS=~/theos            # Theos + iOS toolchain + iPhoneOS9.3.sdk в $THEOS/sdks (плюс liblaunch.tbd из 10.3, см. workflow)
+export THEOS=~/theos            # Theos + iOS toolchain + iPhoneOS10.3.sdk в $THEOS/sdks, пропатченный tools/fix-sdk.py (см. workflow)
 make ipa FINALPACKAGE=1         # packages/nogram.ipa и packages/*.deb
 make package TG_API_ID=123 TG_API_HASH=abc...   # с вшитыми ключами
 ```

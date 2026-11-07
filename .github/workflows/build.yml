@@ -27,16 +27,16 @@ jobs:
           curl -fsSL https://github.com/L1ghtmann/llvm-project/releases/latest/download/iOSToolchain-x86_64.tar.xz | tar -xJf - -C "$THEOS/toolchain/"
           "$THEOS/toolchain/linux/iphone/bin/clang" --version
 
-      - name: Install iPhoneOS 9.3 SDK
+      - name: Install iPhoneOS 10.3 SDK (+ armv7 symbols from 9.3)
         run: |
-          # 9.3 is the newest SDK whose .tbd stubs still carry armv7-only symbols
-          # (objc_msgSend_stret, compiler_rt). Its libSystem re-exports liblaunch,
-          # which the SDK lacks, so borrow that stub from 10.3.
+          # 10.3 .tbd stubs lack armv7-only symbols (objc_msgSend_stret, compiler_rt);
+          # 9.3 stubs have them but current ld64 rejects their old format.
+          # tools/fix-sdk.py merges the missing armv7 symbols into the 10.3 stubs.
           git clone --depth 1 --filter=blob:none --sparse https://github.com/theos/sdks.git /tmp/sdks
-          git -C /tmp/sdks sparse-checkout set iPhoneOS9.3.sdk iPhoneOS10.3.sdk/usr/lib/system
-          cp /tmp/sdks/iPhoneOS10.3.sdk/usr/lib/system/liblaunch.tbd /tmp/sdks/iPhoneOS9.3.sdk/usr/lib/system/
+          git -C /tmp/sdks sparse-checkout set iPhoneOS9.3.sdk iPhoneOS10.3.sdk
+          python3 nogram/tools/fix-sdk.py /tmp/sdks/iPhoneOS9.3.sdk /tmp/sdks/iPhoneOS10.3.sdk
           mkdir -p "$THEOS/sdks"
-          mv /tmp/sdks/iPhoneOS9.3.sdk "$THEOS/sdks/"
+          mv /tmp/sdks/iPhoneOS10.3.sdk "$THEOS/sdks/"
 
       - name: Build
         working-directory: nogram
