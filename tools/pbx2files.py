@@ -93,6 +93,15 @@ def main():
             print(name)
         return
     target = targets[sys.argv[2]]
+    if len(sys.argv) > 3 and sys.argv[3] == '--settings':
+        merged = {}
+        for cfgs in (project['buildConfigurationList'], target['buildConfigurationList']):
+            for c in objects[cfgs]['buildConfigurations']:
+                if objects[c]['name'] in ('Release', 'Release AppStore') or (len(sys.argv) > 4 and objects[c]['name'] == sys.argv[4]):
+                    merged.update(objects[c]['buildSettings'])
+        for k in sorted(merged):
+            print('%s = %s' % (k, merged[k]))
+        return
     for phase_key in target['buildPhases']:
         phase = objects[phase_key]
         if phase['isa'] != 'PBXSourcesBuildPhase':
