@@ -4,7 +4,7 @@
 
 @implementation TGColorImageDataSource
 
-+ (void)load
++ (void)tg_deferredLoad
 {
     @autoreleasepool
     {

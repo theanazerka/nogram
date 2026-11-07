@@ -33,7 +33,7 @@
 
 @implementation TGResolveDomainActor
 
-+ (void)load
++ (void)tg_deferredLoad
 {
     [ASActor registerActorClass:self];
 }

@@ -385,7 +385,7 @@ static id<SDisposable> autoNightDisposable;
     }];
 }
 
-+ (void)load
++ (void)tg_deferredLoad
 {
     currentState = [self loadState];
     if (currentState == nil)

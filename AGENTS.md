@@ -37,7 +37,7 @@ since layer ~133. Fixing login means moving the app to the **current layer (232)
 |---|---|
 | 1. Original 4.9.1 compiles and links for armv7 / iOS 6 with Theos in CI | **done** |
 | 1b. No strong imports missing from iOS 6 (dyld launch crash) | **done**, enforced in CI |
-| 1c. App actually starts on iOS 6 | **unknown**: the first build crashed at launch from a missing vImage symbol; that is fixed, waiting for the owner to retest |
+| 1c. App actually starts on iOS 6 | **no**: still crashes at launch after the vImage fix (no report screen appeared with the old catcher, which ran after all `+load`s). Launch tracer + deferred `+load` (§8) added to find out why |
 | 2. TL layer 232 generator in the original class format | **not started** (analysis done, see §6) |
 | 3. App code adapted to layer 232 (64-bit ids, new auth flow) | **not started** |
 
@@ -242,20 +242,31 @@ branch. Pages must be set to "Deploy from a branch → gh-pages / root". URL:
 
 ## 8. Debugging on device
 
-- `telegram/compat/TGCrashCatcher.m` catches uncaught ObjC exceptions and fatal signals and writes
-  `Library/Caches/last-crash.txt`. On the next launch, before the app's own launch code runs, it shows
-  the report full screen and copies it to the pasteboard. Ask the owner to paste it. Addresses are
-  for the unslid binary: subtract the printed `slide`; symbolicate with the unstripped object files
-  from CI (`.theos/obj/armv7`) or `atos`.
-- A crash **before** `main` (dyld, missing symbol) produces no report. That is what
-  `check-ios6-imports.py` is for. Also suspect classes that subclass classes missing on iOS 6 (weak
-  superclass: `UIAlertController`, `SFSafariViewController`, `NSTextAttachment`, `NSLayoutManager`,
-  `UICollectionViewTransitionLayout`, `UIPercentDrivenInteractiveTransition`,
-  `UIScreenEdgePanGestureRecognizer`); the iOS 6 runtime should ignore them, but this is unverified.
-- Upstream shipped to the App Store with iOS 8+; many code paths call iOS 7/8 APIs guarded by
-  `iosMajorVersion()`. Unguarded ones will show up as `unrecognized selector` reports.
+The owner cannot pull crash logs, so the app reports its own failures:
 
----
+- `telegram/compat/TGCrashCatcher.m` is linked **first**; its `+load` is the first app code that runs.
+  It installs uncaught-exception and fatal-signal handlers and appends stage marks to
+  `Library/Caches/launch-trace.txt`: `launch`, deferred `+load` begin/end per class, `app delegate`,
+  `didFinishLaunching: begin/end`, then `stable` after 10 s, at which point the trace is deleted.
+- If the previous launch never reached `stable` (crash, exception, watchdog or jetsam kill), the next
+  launch shows the whole trace full screen **before** the app's own `didFinishLaunching` runs, and copies
+  it to the pasteboard. Ask the owner to paste it. Addresses: subtract the printed slide and symbolicate
+  against the unstripped objects from CI.
+- **Upstream `+load` methods are deferred**: `tools/defer-loads.py` renamed all 53 of them to
+  `+tg_deferredLoad`. `compat/TGDeferredLoads.m` (linked **last**, so its constructor runs after all
+  static initializers, before `main`) calls them in `@try`, with trace marks. A class whose deferred load
+  killed the process is recorded in `Library/Caches/skipped-loads.txt` and skipped on later launches of
+  the same build (`CFBundleVersion` = CI package version), so the report can still be shown.
+  **Re-run `tools/defer-loads.py` after importing new upstream sources.**
+- No trace screen at all after a crash means the process died before any app code: dyld (missing
+  symbol/library, see `check-ios6-imports.py`), code signature, or the kernel. Signature: primary
+  CodeDirectory is SHA-1 (iOS 6 compatible), with an extra SHA-256 slot from ldid.
+- Classes that subclass classes missing on iOS 6 (weak superclass): `UIAlertController`,
+  `SFSafariViewController`, `NSTextAttachment`, `NSLayoutManager`, `UICollectionViewTransitionLayout`,
+  `UIPercentDrivenInteractiveTransition`, `UIScreenEdgePanGestureRecognizer`. The iOS 6 runtime should
+  ignore them, but this is unverified.
+- Upstream shipped with iOS 8+; many code paths call iOS 7/8 APIs guarded by `iosMajorVersion()`.
+  Unguarded ones show up as `unrecognized selector` in the trace.
 
 ## 9. Working rules
 

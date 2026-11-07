@@ -8,7 +8,7 @@ static void TGSimpleImageViewDidMoveFromWindow(__unused id self, __unused SEL _c
 {
 }
 
-+ (void)load
++ (void)tg_deferredLoad
 {
     FreedomDecoration instanceDecorations[] =
     {

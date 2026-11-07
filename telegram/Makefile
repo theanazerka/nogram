@@ -30,7 +30,7 @@ MTPROTO_DIR = vendor/MtProtoKit-4.9.1
 MTPROTO_MRC_FILES = $(MTPROTO_DIR)/AFHTTPClient.m $(MTPROTO_DIR)/AFHTTPRequestOperation.m $(MTPROTO_DIR)/AFJSONUtilities.m $(MTPROTO_DIR)/AFURLConnectionOperation.m
 MTPROTO_FILES = $(wildcard $(MTPROTO_DIR)/*.m)
 
-Telegram_FILES = compat/TGAvailabilityShim.m compat/TGCrashCatcher.m $(TG_APP_FILES) $(TG_LEGACYCOMPONENTS_FILES) $(TG_SSIGNALKIT_FILES) $(TG_LOTTIE_FILES) $(TG_VOIP_FILES) $(MTPROTO_FILES)
+Telegram_FILES = compat/TGCrashCatcher.m compat/TGAvailabilityShim.m $(TG_APP_FILES) $(TG_LEGACYCOMPONENTS_FILES) $(TG_SSIGNALKIT_FILES) $(TG_LOTTIE_FILES) $(TG_VOIP_FILES) $(MTPROTO_FILES) compat/TGDeferredLoads.m
 
 # Xcode resolved "Foo.h" through header maps; emulate that with -iquote for every header dir.
 TG_QUOTE_DIRS = . Share Telegraph Telegraph/API Telegraph/AdHoc Telegraph/thirdparty/ogg/ogg Telegraph/thirdparty/opusenc \
@@ -91,7 +91,7 @@ Telegram_RESOURCE_DIRS = .theos/tgresources
 include $(THEOS_MAKE_PATH)/application.mk
 
 before-all::
-	python3 ../tools/gen-telegram-resources.py . .theos/tgresources
+	python3 ../tools/gen-telegram-resources.py . .theos/tgresources "$(PACKAGE_VERSION)"
 
 ipa: package
 	rm -rf $(THEOS_PACKAGE_DIR)/Payload $(THEOS_PACKAGE_DIR)/Telegram.ipa

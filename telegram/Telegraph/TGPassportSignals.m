@@ -39,7 +39,7 @@
 
 static SPipe *passportPipe;
 
-+ (void)load
++ (void)tg_deferredLoad
 {
     passportPipe = [[SPipe alloc] init];
 }

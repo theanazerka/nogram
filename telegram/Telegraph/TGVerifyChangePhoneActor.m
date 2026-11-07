@@ -16,7 +16,7 @@
 
 @implementation TGVerifyChangePhoneActor
 
-+ (void)load
++ (void)tg_deferredLoad
 {
     [ASActor registerActorClass:self];
 }

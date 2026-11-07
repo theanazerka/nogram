@@ -14,7 +14,7 @@
 
 @implementation TGAudioDownloadActor
 
-+ (void)load {
++ (void)tg_deferredLoad {
     [ASActor registerActorClass:self];
 }
 

@@ -35,7 +35,7 @@ static const void *TGProxyDismissControllerKey = &TGProxyDismissControllerKey;
 
 @implementation UIViewController (Proxy)
 
-+ (void)load {
++ (void)tg_deferredLoad {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         SwizzleInstanceMethod([UIViewController class], @selector(presentingViewController), @selector(_proxy_presentingViewController));

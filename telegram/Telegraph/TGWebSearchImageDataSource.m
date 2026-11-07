@@ -42,7 +42,7 @@ static ASQueue *taskManagementQueue()
 
 @implementation TGWebSearchImageDataSource
 
-+ (void)load
++ (void)tg_deferredLoad
 {
     @autoreleasepool
     {

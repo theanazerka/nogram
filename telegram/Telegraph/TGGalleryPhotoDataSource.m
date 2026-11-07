@@ -37,7 +37,7 @@
     return @"media-gallery-image";
 }
 
-+ (void)load
++ (void)tg_deferredLoad
 {
     @autoreleasepool
     {

@@ -24,7 +24,7 @@ static const TGTwoColors colors[] = {
 
 @implementation TGPlaceholderImageDataSource
 
-+ (void)load
++ (void)tg_deferredLoad
 {
     @autoreleasepool
     {

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Assemble the Telegram.app resource folder for Theos from the Xcode project.
 
-Usage: gen-telegram-resources.py <telegram dir> <output dir>
+Usage: gen-telegram-resources.py <telegram dir> <output dir> [build version]
 
 Mirrors Xcode's "Copy Bundle Resources" phase: plain files and bundles go to the
 bundle root, localized variants into <lang>.lproj/. iOS 6 has no asset catalogs and
@@ -104,6 +104,8 @@ def main():
 
     info = fix(info)
     info['CFBundleExecutable'] = 'Telegram'
+    if len(sys.argv) > 3 and sys.argv[3]:
+        info['CFBundleVersion'] = sys.argv[3]  # CI build number (launch tracer keys on it)
     info['CFBundleIdentifier'] = 'org.telegram.legacy'
     info['MinimumOSVersion'] = '6.0'
     info.pop('UILaunchStoryboardName', None)

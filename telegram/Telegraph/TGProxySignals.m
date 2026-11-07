@@ -32,7 +32,7 @@
 static SPipe *currentPipe;
 static SPipe *listPipe;
 
-+ (void)load
++ (void)tg_deferredLoad
 {
     currentPipe = [[SPipe alloc] init];
     listPipe = [[SPipe alloc] init];

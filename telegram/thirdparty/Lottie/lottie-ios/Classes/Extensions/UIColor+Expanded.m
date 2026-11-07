@@ -403,7 +403,7 @@ static NSMutableDictionary *colorNameCache = nil;
 
 #pragma mark UIColor_Expanded initialization
 
-+ (void)load {
++ (void)tg_deferredLoad {
 	colorNameCache = [[NSMutableDictionary alloc] init];
 }
 

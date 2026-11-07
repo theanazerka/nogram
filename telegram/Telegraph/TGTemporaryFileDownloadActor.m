@@ -23,7 +23,7 @@
 
 @implementation TGTemporaryFileDownloadActor
 
-+ (void)load
++ (void)tg_deferredLoad
 {
     [ASActor registerActorClass:self];
 }

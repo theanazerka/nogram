@@ -49,7 +49,7 @@ static ASQueue *taskManagementQueue()
     return @"peer-avatar-thumbnail";
 }
 
-+ (void)load
++ (void)tg_deferredLoad
 {
     @autoreleasepool
     {

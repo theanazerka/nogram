@@ -31,7 +31,7 @@
 
 @implementation TGGiphySearchActor
 
-+ (void)load
++ (void)tg_deferredLoad
 {
     [ASActor registerActorClass:self];
 }

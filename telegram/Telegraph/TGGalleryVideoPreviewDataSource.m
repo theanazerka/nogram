@@ -35,7 +35,7 @@
     return @"media-gallery-video-preview";
 }
 
-+ (void)load
++ (void)tg_deferredLoad
 {
     @autoreleasepool
     {

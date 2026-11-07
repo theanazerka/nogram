@@ -59,7 +59,7 @@
     [self setAccountSettingsForStateId:[TGUpdateStateRequestBuilder stateVersion] accountSettings:accountSettings];
 }
 
-+ (void)load
++ (void)tg_deferredLoad
 {
     [ASActor registerActorClass:self];
 }

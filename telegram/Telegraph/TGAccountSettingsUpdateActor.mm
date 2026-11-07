@@ -27,7 +27,7 @@
 
 @implementation TGAccountSettingsUpdateActor
 
-+ (void)load
++ (void)tg_deferredLoad
 {
     [ASActor registerActorClass:self];
 }

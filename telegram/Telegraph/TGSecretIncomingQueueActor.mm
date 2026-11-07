@@ -32,7 +32,7 @@
 
 @implementation TGSecretIncomingQueueActor
 
-+ (void)load
++ (void)tg_deferredLoad
 {
     [ASActor registerActorClass:self];
 }

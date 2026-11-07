@@ -1,10 +1,14 @@
-// Minimal on-device crash reporter for builds that run on iOS 6.
+// On-device launch tracer and crash reporter for iOS 6 builds (no crash logs needed).
 //
-// Uncaught Objective-C exceptions and fatal signals are written to
-// Library/Caches/last-crash.txt. On the next launch, before the app's own
-// launch code runs, the report is shown full-screen and copied to the
-// pasteboard, so it can be pasted into a chat without access to device logs.
-// "Продолжить" then runs the normal application:didFinishLaunchingWithOptions:.
+// - Installed from the first +load in the binary (this file is linked first), so it is
+//   active before any other app code runs.
+// - Every launch appends stage marks to Library/Caches/launch-trace.txt; uncaught
+//   exceptions and fatal signals (with backtraces) go to the same file.
+// - When the app has run for 10 s ("stable") the trace is deleted. If the previous
+//   launch never got there (crash, watchdog kill, jetsam...), the next launch shows the
+//   trace full screen before the app's own launch code and copies it to the pasteboard.
+// - Upstream +load methods were renamed to +tg_deferredLoad and are run by
+//   compat/TGDeferredLoads.m; a +load that crashed last time is skipped (see there).
 
 #import <UIKit/UIKit.h>
 #import <objc/runtime.h>
@@ -15,45 +19,64 @@
 #include <unistd.h>
 #include <string.h>
 
-static char gCrashPath[1024];
-static volatile sig_atomic_t gExceptionWritten = 0;
+#import "TGCrashCatcher.h"
 
-static NSString *TGCrashFilePath(void)
+static char gTracePath[1024];
+static NSString *gPendingReport;
+static NSMutableSet *gSkippedLoads;
+
+static NSString *TGCachesPath(NSString *name)
 {
     NSString *caches = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) objectAtIndex:0];
-    return [caches stringByAppendingPathComponent:@"last-crash.txt"];
+    return [caches stringByAppendingPathComponent:name];
+}
+
+void TGTraceMark(const char *mark)
+{
+    int fd = open(gTracePath, O_WRONLY | O_CREAT | O_APPEND, 0644);
+    if (fd < 0)
+        return;
+    write(fd, mark, strlen(mark));
+    write(fd, "\n", 1);
+    fsync(fd);
+    close(fd);
+}
+
+void TGTraceMarkf(NSString *format, ...)
+{
+    va_list args;
+    va_start(args, format);
+    NSString *text = [[NSString alloc] initWithFormat:format arguments:args];
+    va_end(args);
+    TGTraceMark(text.UTF8String ?: "?");
+}
+
+bool TGTraceShouldSkipDeferredLoad(NSString *className)
+{
+    return [gSkippedLoads containsObject:className];
 }
 
 static void TGHandleException(NSException *exception)
 {
     NSMutableString *report = [[NSMutableString alloc] init];
-    [report appendFormat:@"app %@ %@\niOS %@ %@\nslide 0x%lx\n",
-        [[NSBundle mainBundle] bundleIdentifier],
-        [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"] ?: @"?",
-        [[UIDevice currentDevice] systemVersion], [[UIDevice currentDevice] model],
-        (unsigned long)_dyld_get_image_vmaddr_slide(0)];
-    [report appendFormat:@"exception %@\nreason %@\n", exception.name, exception.reason];
+    [report appendFormat:@"EXCEPTION %@\nreason: %@\n", exception.name, exception.reason];
     for (NSString *frame in exception.callStackSymbols)
-        [report appendFormat:@"%@\n", frame];
-    [report writeToFile:TGCrashFilePath() atomically:YES encoding:NSUTF8StringEncoding error:NULL];
-    gExceptionWritten = 1;
+        [report appendFormat:@"  %@\n", frame];
+    TGTraceMark(report.UTF8String ?: "EXCEPTION ?");
 }
 
 static void TGHandleSignal(int sig)
 {
-    if (!(sig == SIGABRT && gExceptionWritten))
+    char line[160];
+    int len = snprintf(line, sizeof(line), "SIGNAL %d (slide 0x%lx)\n", sig, (unsigned long)_dyld_get_image_vmaddr_slide(0));
+    int fd = open(gTracePath, O_WRONLY | O_CREAT | O_APPEND, 0644);
+    if (fd >= 0)
     {
-        int fd = open(gCrashPath, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-        if (fd >= 0)
-        {
-            char line[160];
-            int len = snprintf(line, sizeof(line), "signal %d\nslide 0x%lx\n", sig, (unsigned long)_dyld_get_image_vmaddr_slide(0));
-            write(fd, line, (size_t)len);
-            void *frames[64];
-            int count = backtrace(frames, 64);
-            backtrace_symbols_fd(frames, count, fd);
-            close(fd);
-        }
+        write(fd, line, (size_t)len);
+        void *frames[64];
+        int count = backtrace(frames, 64);
+        backtrace_symbols_fd(frames, count, fd);
+        close(fd);
     }
     signal(sig, SIG_DFL);
     raise(sig);
@@ -61,7 +84,6 @@ static void TGHandleSignal(int sig)
 
 #pragma mark - Report screen
 
-static NSString *gPendingReport;
 static IMP gOriginalDidFinishLaunching;
 static UIWindow *gReportWindow;
 
@@ -78,7 +100,7 @@ static UIWindow *gReportWindow;
     CGRect bounds = view.bounds;
 
     UILabel *title = [[UILabel alloc] initWithFrame:CGRectMake(10, 10, bounds.size.width - 20, 40)];
-    title.text = @"Прошлый запуск упал. Отчёт скопирован в буфер обмена.";
+    title.text = @"Прошлый запуск не удался. Отчёт скопирован в буфер обмена.";
     title.numberOfLines = 2;
     title.font = [UIFont boldSystemFontOfSize:14];
     title.autoresizingMask = UIViewAutoresizingFlexibleWidth;
@@ -87,7 +109,7 @@ static UIWindow *gReportWindow;
     UITextView *text = [[UITextView alloc] initWithFrame:CGRectMake(10, 55, bounds.size.width - 20, bounds.size.height - 120)];
     text.text = gPendingReport;
     text.editable = NO;
-    text.font = [UIFont fontWithName:@"Courier" size:11];
+    text.font = [UIFont fontWithName:@"Courier" size:10];
     text.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     [view addSubview:text];
 
@@ -109,11 +131,26 @@ static UIWindow *gReportWindow;
 
 @end
 
-static BOOL TGDidFinishLaunchingWithReport(id self, SEL _cmd, UIApplication *application, NSDictionary *options)
+static BOOL TGCallOriginalDidFinishLaunching(id self, SEL cmd, UIApplication *application, NSDictionary *options)
+{
+    TGTraceMark("didFinishLaunching: begin");
+    BOOL result = ((BOOL (*)(id, SEL, UIApplication *, NSDictionary *))gOriginalDidFinishLaunching)(self, cmd, application, options);
+    TGTraceMark("didFinishLaunching: end");
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(10 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^
+    {
+        TGTraceMark("stable");
+        // A clean run: forget the trace. Skipped +loads stay skipped until the next build.
+        unlink(gTracePath);
+    });
+    return result;
+}
+
+static BOOL TGDidFinishLaunching(id self, SEL cmd, UIApplication *application, NSDictionary *options)
 {
     if (gPendingReport == nil)
-        return ((BOOL (*)(id, SEL, UIApplication *, NSDictionary *))gOriginalDidFinishLaunching)(self, _cmd, application, options);
+        return TGCallOriginalDidFinishLaunching(self, cmd, application, options);
 
+    [UIPasteboard generalPasteboard].string = gPendingReport;
     gReportWindow = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
     TGCrashReportController *controller = [[TGCrashReportController alloc] init];
     __weak id weakSelf = self;
@@ -122,66 +159,100 @@ static BOOL TGDidFinishLaunchingWithReport(id self, SEL _cmd, UIApplication *app
         gPendingReport = nil;
         gReportWindow.hidden = YES;
         gReportWindow = nil;
-        ((BOOL (*)(id, SEL, UIApplication *, NSDictionary *))gOriginalDidFinishLaunching)(weakSelf, _cmd, application, options);
+        TGCallOriginalDidFinishLaunching(weakSelf, cmd, application, options);
         [[UIApplication sharedApplication].delegate.window makeKeyAndVisible];
     };
     gReportWindow.rootViewController = controller;
     [gReportWindow makeKeyAndVisible];
+    TGTraceMark("report shown");
     return YES;
 }
 
 static void (*gOriginalSetDelegate)(id, SEL, id);
 
-static void TGSetDelegate(id self, SEL _cmd, id delegate)
+static void TGSetDelegate(id self, SEL cmd, id delegate)
 {
     static bool hooked = false;
-    if (!hooked && delegate != nil && gPendingReport != nil)
+    if (!hooked && delegate != nil)
     {
         hooked = true;
-        SEL sel = @selector(application:didFinishLaunchingWithOptions:);
-        Method method = class_getInstanceMethod([delegate class], sel);
+        TGTraceMarkf(@"app delegate: %@", NSStringFromClass([delegate class]));
+        Method method = class_getInstanceMethod([delegate class], @selector(application:didFinishLaunchingWithOptions:));
         if (method != NULL)
-            gOriginalDidFinishLaunching = method_setImplementation(method, (IMP)TGDidFinishLaunchingWithReport);
+            gOriginalDidFinishLaunching = method_setImplementation(method, (IMP)TGDidFinishLaunching);
     }
-    gOriginalSetDelegate(self, _cmd, delegate);
+    gOriginalSetDelegate(self, cmd, delegate);
 }
 
-__attribute__((constructor)) static void TGCrashCatcherInstall(void)
+#pragma mark - Install
+
+@interface TGCrashCatcher : NSObject
+@end
+
+@implementation TGCrashCatcher
+
++ (void)load
 {
     @autoreleasepool
     {
-        NSString *path = TGCrashFilePath();
-        strncpy(gCrashPath, [path fileSystemRepresentation], sizeof(gCrashPath) - 1);
+        NSString *tracePath = TGCachesPath(@"launch-trace.txt");
+        strncpy(gTracePath, [tracePath fileSystemRepresentation], sizeof(gTracePath) - 1);
 
-        NSString *report = [NSString stringWithContentsOfFile:path encoding:NSUTF8StringEncoding error:NULL];
-        if (report.length != 0)
+        NSString *skippedPath = TGCachesPath(@"skipped-loads.txt");
+        NSString *build = [NSString stringWithFormat:@"build %@", [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"] ?: @"?"];
+        NSString *skipped = [NSString stringWithContentsOfFile:skippedPath encoding:NSUTF8StringEncoding error:NULL] ?: @"";
+        NSArray *skippedLines = [skipped componentsSeparatedByString:@"\n"];
+        gSkippedLoads = [[NSMutableSet alloc] init];
+        // The list belongs to one build: a new build gets every +load another chance.
+        if (skippedLines.count != 0 && [skippedLines[0] isEqualToString:build])
         {
-            gPendingReport = report;
-            [[NSFileManager defaultManager] removeItemAtPath:path error:NULL];
-            Method setDelegate = class_getInstanceMethod([UIApplication class], @selector(setDelegate:));
-            gOriginalSetDelegate = (void (*)(id, SEL, id))method_setImplementation(setDelegate, (IMP)TGSetDelegate);
+            for (NSString *line in [skippedLines subarrayWithRange:NSMakeRange(1, skippedLines.count - 1)])
+                if (line.length != 0)
+                    [gSkippedLoads addObject:line];
         }
+
+        // The previous launch never reached "stable": report it.
+        NSString *previous = [NSString stringWithContentsOfFile:tracePath encoding:NSUTF8StringEncoding error:NULL];
+        if (previous.length != 0)
+        {
+            // If it died inside a deferred +load, skip that one from now on.
+            NSString *lastBegin = nil;
+            for (NSString *line in [previous componentsSeparatedByString:@"\n"])
+            {
+                if ([line hasPrefix:@"+load begin "])
+                    lastBegin = [line substringFromIndex:12];
+                else if ([line hasPrefix:@"+load end "] && [[line substringFromIndex:10] isEqualToString:lastBegin ?: @""])
+                    lastBegin = nil;
+            }
+            if (lastBegin.length != 0 && ![gSkippedLoads containsObject:lastBegin])
+            {
+                [gSkippedLoads addObject:lastBegin];
+                NSString *all = [build stringByAppendingFormat:@"\n%@", [[gSkippedLoads allObjects] componentsJoinedByString:@"\n"]];
+                [all writeToFile:skippedPath atomically:YES encoding:NSUTF8StringEncoding error:NULL];
+            }
+
+            NSMutableString *report = [[NSMutableString alloc] init];
+            [report appendFormat:@"%@ %@ / iOS %@ %@\n", [[NSBundle mainBundle] bundleIdentifier],
+                [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"] ?: @"?",
+                [[UIDevice currentDevice] systemVersion], [[UIDevice currentDevice] model]];
+            if (gSkippedLoads.count != 0)
+                [report appendFormat:@"skipping +load of: %@\n", [[gSkippedLoads allObjects] componentsJoinedByString:@", "]];
+            [report appendString:@"--- previous launch trace ---\n"];
+            [report appendString:previous.length > 12000 ? [previous substringFromIndex:previous.length - 12000] : previous];
+            gPendingReport = report;
+            unlink(gTracePath);
+        }
+
+        TGTraceMarkf(@"launch %@ (slide 0x%lx)", [NSDate date], (unsigned long)_dyld_get_image_vmaddr_slide(0));
 
         NSSetUncaughtExceptionHandler(&TGHandleException);
         int signals[] = { SIGSEGV, SIGBUS, SIGILL, SIGABRT, SIGFPE, SIGTRAP };
         for (size_t i = 0; i < sizeof(signals) / sizeof(signals[0]); i++)
             signal(signals[i], TGHandleSignal);
+
+        Method setDelegate = class_getInstanceMethod([UIApplication class], @selector(setDelegate:));
+        gOriginalSetDelegate = (void (*)(id, SEL, id))method_setImplementation(setDelegate, (IMP)TGSetDelegate);
     }
-}
-
-// Pasteboard is set once UIKit is up (it is not available in a constructor).
-@interface TGCrashCatcherPasteboard : NSObject
-@end
-
-@implementation TGCrashCatcherPasteboard
-
-+ (void)load
-{
-    [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidFinishLaunchingNotification object:nil queue:nil usingBlock:^(__unused NSNotification *note)
-    {
-        if (gPendingReport != nil)
-            [UIPasteboard generalPasteboard].string = gPendingReport;
-    }];
 }
 
 @end

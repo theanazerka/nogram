@@ -45,7 +45,7 @@ static ASQueue *taskManagementQueue()
 
 @implementation TGStickerImageDataSource
 
-+ (void)load
++ (void)tg_deferredLoad
 {
     @autoreleasepool
     {

@@ -25,7 +25,7 @@ const CGSize TGMediaAssetImageLegacySizeLimit = { 2048, 2048 };
 
 static Class TGMediaAssetImageSignalsClass = nil;
 
-+ (void)load
++ (void)tg_deferredLoad
 {
     if ([TGMediaAssetsLibrary usesPhotoFramework])
         TGMediaAssetImageSignalsClass = [TGMediaAssetModernImageSignals class];

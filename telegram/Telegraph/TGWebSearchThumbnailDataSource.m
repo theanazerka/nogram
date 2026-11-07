@@ -43,7 +43,7 @@ static ASQueue *taskManagementQueue()
 
 @implementation TGWebSearchThumbnailDataSource
 
-+ (void)load
++ (void)tg_deferredLoad
 {
     @autoreleasepool
     {

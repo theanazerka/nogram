@@ -9,7 +9,7 @@
 
 static Class TGMediaAssetsLibraryClass = nil;
 
-+ (void)load
++ (void)tg_deferredLoad
 {
     if ([self usesPhotoFramework])
         TGMediaAssetsLibraryClass = [TGMediaAssetsModernLibrary class];

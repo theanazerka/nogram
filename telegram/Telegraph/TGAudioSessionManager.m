@@ -327,7 +327,7 @@
 @implementation TGAudioRoute
 
 static NSString *deviceModel = nil;
-+ (void)load
++ (void)tg_deferredLoad
 {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^

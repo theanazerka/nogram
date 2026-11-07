@@ -43,7 +43,7 @@ static ASQueue *taskManagementQueue()
 
 @implementation TGLocationVenueIconDataSource
 
-+ (void)load
++ (void)tg_deferredLoad
 {
     @autoreleasepool
     {
