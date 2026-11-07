@@ -75,10 +75,23 @@ endif
 
 # Upstream prefix header only applies to the app target.
 $(foreach f,$(TG_APP_FILES),$(eval $(f)_CFLAGS += -include Telegraph/Telegraph-Prefix.pch))
+# Upstream links LegacyComponents as a separate dylib, so a few helpers exist twice.
+# Rename LegacyComponents' copies; every caller then uses the app's definition.
+TG_LC_DUP_COLOR = TGColorWithHex TGColorWithHexAndAlpha TGAccentColor TGDestructiveAccentColor TGSeparatorColor TGSelectionColor
+TG_LC_DUP_COMMON = TGEncodeText cpuCoreCount iosMinorVersion iosMajorVersion deviceMemorySize TGObjectCompare TGStringCompare TGLocalized
+lc/TGColor.m_CFLAGS += $(foreach s,$(TG_LC_DUP_COLOR),-D$(s)=LCDup_$(s))
+lc/LegacyComponentsInternal.m_CFLAGS += $(foreach s,$(TG_LC_DUP_COMMON),-D$(s)=LCDup_$(s))
+
 # AFNetworking 1.x inside MtProtoKit is manual retain/release.
 $(foreach f,$(MTPROTO_MRC_FILES),$(eval $(f)_CFLAGS += -fno-objc-arc))
 
+# Bundle resources (Xcode "Copy Bundle Resources" phase + iOS 6 Info.plist).
+Telegram_RESOURCE_DIRS = .theos/tgresources
+
 include $(THEOS_MAKE_PATH)/application.mk
+
+before-all::
+	python3 ../tools/gen-telegram-resources.py . .theos/tgresources
 
 ipa: package
 	rm -rf $(THEOS_PACKAGE_DIR)/Payload $(THEOS_PACKAGE_DIR)/Telegram.ipa

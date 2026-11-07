@@ -1,0 +1,9 @@
+Package: org.telegram.legacy
+Name: Telegram 4.9.1 (iOS 6)
+Version: 4.9.1
+Architecture: iphoneos-arm
+Description: Original Telegram iOS 4.9.1 rebuilt for iOS 6 with Theos.
+Maintainer: nogram
+Author: Telegram / nogram
+Section: Social
+Depends: firmware (>= 6.0)
