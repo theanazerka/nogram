@@ -12,6 +12,7 @@
 // src/base/logging.cc.
 
 // Use the C++ version to provide __GLIBCXX__.
+#include <stdlib.h>
 #include <cstdarg>
 #include <cstdio>
 #include <cstdlib>
