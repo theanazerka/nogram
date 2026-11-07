@@ -25,7 +25,7 @@ MTPROTO_FILES = $(wildcard $(MTPROTO_DIR)/*.m)
 Telegram_FILES = $(TG_APP_FILES) $(TG_LEGACYCOMPONENTS_FILES) $(TG_SSIGNALKIT_FILES) $(TG_LOTTIE_FILES) $(TG_VOIP_FILES) $(MTPROTO_FILES)
 
 # Xcode resolved "Foo.h" through header maps; emulate that with -iquote for every header dir.
-TG_QUOTE_DIRS = . Telegraph Telegraph/API Telegraph/AdHoc Telegraph/thirdparty/ogg/ogg Telegraph/thirdparty/opusenc \
+TG_QUOTE_DIRS = . Share Telegraph Telegraph/API Telegraph/AdHoc Telegraph/thirdparty/ogg/ogg Telegraph/thirdparty/opusenc \
 	Telegraph/thirdparty/opusfile Watch/Bridge legacy/TL legacy/TL/TL legacy/TelegraphKit legacy/TelegraphKit/Third-Party/FMDB \
 	submodules/LegacyComponents/LegacyComponents thirdparty thirdparty/Lottie/lottie-ios/Classes/AnimatableLayers \
 	thirdparty/Lottie/lottie-ios/Classes/AnimatableProperties thirdparty/Lottie/lottie-ios/Classes/Extensions \
