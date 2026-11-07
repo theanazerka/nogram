@@ -28,7 +28,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: theos
-          key: theos-11.4-${{ hashFiles('nogram/.github/workflows/build.yml') }}
+          key: theos-11.4-v1
 
       - name: Restore object cache
         uses: actions/cache/restore@v4
@@ -76,7 +76,9 @@ jobs:
           TG_API_HASH: ${{ secrets.TG_API_HASH }}
         run: |
           set -o pipefail
-          make ipa FINALPACKAGE=1 TG_API_ID="$TG_API_ID" TG_API_HASH="$TG_API_HASH" -j"$(nproc)" -k 2>&1 | tee build.log
+          # Every CI build gets a higher version so Cydia offers it as an update.
+          VERSION="$(sed -n 's/^Version: *//p' control)-${{ github.run_number }}"
+          make ipa FINALPACKAGE=1 PACKAGE_VERSION="$VERSION" TG_API_ID="$TG_API_ID" TG_API_HASH="$TG_API_HASH" -j"$(nproc)" -k 2>&1 | tee build.log
           ls -la packages
 
       - name: Save object cache
@@ -116,3 +118,41 @@ jobs:
           path: |
             nogram/${{ matrix.project }}/packages/*.deb
             nogram/${{ matrix.project }}/packages/*.ipa
+
+  # Cydia repository on GitHub Pages: https://<owner>.github.io/<repo>/
+  repo:
+    needs: build
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: nogram
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Build Cydia repo
+        run: |
+          sudo apt-get update && sudo apt-get install -y dpkg-dev bzip2
+          python3 nogram/tools/make-cydia-repo.py artifacts site "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/"
+          ls -la site site/debs
+
+      - uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+      - id: deploy
+        uses: actions/deploy-pages@v4
