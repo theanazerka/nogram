@@ -59,14 +59,14 @@ Telegram_CCFLAGS = -std=gnu++11 -stdlib=libc++
 Telegram_LDFLAGS = -ObjC -stdlib=libc++ \
 	vendor/openssl/lib/libcrypto.a thirdparty/WebP.framework/WebP Telegraph/thirdparty/opus/lib/libopus.a \
 	Telegraph/thirdparty/HockeySDK-iOS-3/HockeySDK.embeddedframework/HockeySDK.framework/HockeySDK \
-	-lz -lc++ -licucore
+	-lz -lc++abi -lc++ -licucore
 
 # Present on iOS 6.
 Telegram_FRAMEWORKS = UIKit Foundation CoreGraphics QuartzCore Security SystemConfiguration CFNetwork MobileCoreServices \
 	AVFoundation AudioToolbox CoreMedia CoreVideo ImageIO MediaPlayer AssetsLibrary MapKit MessageUI CoreTelephony \
-	CoreLocation AddressBook AddressBookUI CoreText Accelerate OpenGLES GLKit QuickLook CoreImage CoreMotion PassKit
+	CoreLocation AddressBook AddressBookUI CoreText OpenGLES GLKit QuickLook CoreImage CoreMotion PassKit
 # Newer than iOS 6: weak-linked, upstream already checks availability at runtime.
-Telegram_WEAK_FRAMEWORKS = Photos PhotosUI Contacts ContactsUI CallKit Intents PushKit WebKit SafariServices \
+Telegram_WEAK_FRAMEWORKS = Accelerate Photos PhotosUI Contacts ContactsUI CallKit Intents PushKit WebKit SafariServices \
 	LocalAuthentication VideoToolbox CoreSpotlight AVKit Vision WatchConnectivity CloudKit NotificationCenter
 
 ifneq ($(TG_API_ID),)

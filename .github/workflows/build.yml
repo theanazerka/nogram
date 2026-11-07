@@ -81,6 +81,33 @@ jobs:
           make ipa FINALPACKAGE=1 PACKAGE_VERSION="$VERSION" TG_API_ID="$TG_API_ID" TG_API_HASH="$TG_API_HASH" -j"$(nproc)" -k 2>&1 | tee build.log
           ls -la packages
 
+      - name: Restore iOS 6 system libraries cache
+        id: ios6-cache
+        uses: actions/cache@v4
+        with:
+          path: ios6sdk
+          key: ios6-libs-v1
+
+      - name: Fetch iOS 6 system libraries
+        if: steps.ios6-cache.outputs.cache-hit != 'true'
+        run: |
+          git clone -q --depth 1 --filter=blob:none --no-checkout https://github.com/Alex1s/iPhoneOS6.0.sdk ios6sdk
+          cd ios6sdk
+          git ls-tree -r --name-only HEAD | grep -E '^(usr/lib/[^/]+\.dylib|usr/lib/system/[^/]+\.dylib|System/Library/(Private)?Frameworks/[^/]+\.framework/[^/.]+|System/Library/Frameworks/[^/]+\.framework/Frameworks/[^/]+\.framework/[^/.]+)$' > ../ios6-paths.txt
+          git sparse-checkout init --no-cone
+          git sparse-checkout set --no-cone --stdin < ../ios6-paths.txt
+          git checkout -q
+          rm -rf .git
+
+      - name: Check binary against iOS 6 libraries
+        working-directory: nogram/${{ matrix.project }}
+        run: |
+          sudo apt-get install -y llvm >/dev/null
+          APP=$(ls -d .theos/_/Applications/*.app)
+          BIN="$APP/$(basename "$APP" .app)"
+          # A strong import missing from iOS 6 makes dyld kill the app at launch.
+          python3 ../tools/check-ios6-imports.py "$BIN" "$GITHUB_WORKSPACE/ios6sdk"
+
       - name: Save object cache
         if: always()
         uses: actions/cache/save@v4

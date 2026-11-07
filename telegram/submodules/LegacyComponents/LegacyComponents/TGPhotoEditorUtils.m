@@ -94,6 +94,10 @@ CGFloat TGRadiansToDegrees(CGFloat radians)
 
 CGImageRef TGPhotoLanczosResize(UIImage *image, CGSize targetSize)
 {
+    // vImageBuffer_InitWithCGImage / vImageCreateCGImageFromBuffer are iOS 7+ (Accelerate is weak-linked).
+    if (&vImageBuffer_InitWithCGImage == NULL || &vImageCreateCGImageFromBuffer == NULL)
+        return nil;
+
     if (TGOrientationIsSideward(image.imageOrientation, NULL))
         targetSize = CGSizeMake(targetSize.height, targetSize.width);
     
