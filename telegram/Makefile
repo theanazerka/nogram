@@ -16,6 +16,10 @@ GO_EASY_ON_ME = 1
 include $(THEOS)/makefiles/common.mk
 include sources.mk
 
+# Theos' vendor/include ships private-header replacements for UIKit, Foundation,
+# MobileCoreServices, MapKit... that shadow the SDK and break this code base.
+THEOS_VENDOR_INCLUDE_PATH := $(THEOS_PROJECT_DIR)/include
+
 APPLICATION_NAME = Telegram
 
 MTPROTO_DIR = vendor/MtProtoKit-4.9.1
