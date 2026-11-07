@@ -59,7 +59,7 @@ Telegram_CCFLAGS = -std=gnu++11 -stdlib=libc++
 Telegram_LDFLAGS = -ObjC -stdlib=libc++ \
 	vendor/openssl/lib/libcrypto.a thirdparty/WebP.framework/WebP Telegraph/thirdparty/opus/lib/libopus.a \
 	Telegraph/thirdparty/HockeySDK-iOS-3/HockeySDK.embeddedframework/HockeySDK.framework/HockeySDK \
-	-lz -lc++abi -lc++ -licucore
+	compat/lib/libc++.tbd compat/lib/libc++abi.tbd -lz -licucore
 
 # Present on iOS 6.
 Telegram_FRAMEWORKS = UIKit Foundation CoreGraphics QuartzCore Security SystemConfiguration CFNetwork MobileCoreServices \

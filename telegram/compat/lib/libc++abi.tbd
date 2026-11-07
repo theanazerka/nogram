@@ -1,0 +1,42 @@
+--- !tapi-tbd-v2
+archs:           [ armv7, armv7s ]
+platform:        ios
+install-name:    /usr/lib/libc++abi.dylib
+current-version: 1
+compatibility-version: 1
+exports:
+  - archs:           [ armv7, armv7s ]
+    symbols:         [ __ZTIDi, __ZTIDn, __ZTIDs, __ZTIPDi, __ZTIPDn, __ZTIPDs, __ZTIPKDi, __ZTIPKDn, __ZTIPKDs
+                          __ZTIPKa, __ZTIPKb, __ZTIPKc, __ZTIPKd, __ZTIPKe, __ZTIPKf, __ZTIPKh, __ZTIPKi, __ZTIPKj
+                          __ZTIPKl, __ZTIPKm, __ZTIPKs, __ZTIPKt, __ZTIPKv, __ZTIPKw, __ZTIPKx, __ZTIPKy, __ZTIPa
+                          __ZTIPb, __ZTIPc, __ZTIPd, __ZTIPe, __ZTIPf, __ZTIPh, __ZTIPi, __ZTIPj, __ZTIPl, __ZTIPm
+                          __ZTIPs, __ZTIPt, __ZTIPv, __ZTIPw, __ZTIPx, __ZTIPy, __ZTIa, __ZTIb, __ZTIc, __ZTId
+                          __ZTIe, __ZTIf, __ZTIh, __ZTIi, __ZTIj, __ZTIl, __ZTIm, __ZTIs, __ZTIt, __ZTIv, __ZTIw
+                          __ZTIx, __ZTIy, __ZTSN10__cxxabiv116__enum_type_infoE
+                          __ZTSN10__cxxabiv117__array_type_infoE, __ZTSN10__cxxabiv117__class_type_infoE
+                          __ZTSN10__cxxabiv117__pbase_type_infoE, __ZTSN10__cxxabiv119__pointer_type_infoE
+                          __ZTSN10__cxxabiv120__function_type_infoE, __ZTSN10__cxxabiv120__si_class_type_infoE
+                          __ZTSN10__cxxabiv121__vmi_class_type_infoE, __ZTSN10__cxxabiv123__fundamental_type_infoE
+                          __ZTSN10__cxxabiv129__pointer_to_member_type_infoE, __ZTSPKa, __ZTSPKb, __ZTSPKc, __ZTSPKd
+                          __ZTSPKe, __ZTSPKf, __ZTSPKh, __ZTSPKi, __ZTSPKj, __ZTSPKl, __ZTSPKm, __ZTSPKs, __ZTSPKt
+                          __ZTSPKv, __ZTSPKw, __ZTSPKx, __ZTSPKy, __ZTSPa, __ZTSPb, __ZTSPc, __ZTSPd, __ZTSPe
+                          __ZTSPf, __ZTSPh, __ZTSPi, __ZTSPj, __ZTSPl, __ZTSPm, __ZTSPs, __ZTSPt, __ZTSPv, __ZTSPw
+                          __ZTSPx, __ZTSPy, __ZTSa, __ZTSb, __ZTSc, __ZTSd, __ZTSe, __ZTSf, __ZTSh, __ZTSi, __ZTSj
+                          __ZTSl, __ZTSm, __ZTSs, __ZTSt, __ZTSv, __ZTSw, __ZTSx, __ZTSy
+                          __ZTVN10__cxxabiv116__enum_type_infoE, __ZTVN10__cxxabiv117__array_type_infoE
+                          __ZTVN10__cxxabiv117__class_type_infoE, __ZTVN10__cxxabiv117__pbase_type_infoE
+                          __ZTVN10__cxxabiv119__pointer_type_infoE, __ZTVN10__cxxabiv120__function_type_infoE
+                          __ZTVN10__cxxabiv120__si_class_type_infoE, __ZTVN10__cxxabiv121__vmi_class_type_infoE
+                          __ZTVN10__cxxabiv123__fundamental_type_infoE
+                          __ZTVN10__cxxabiv129__pointer_to_member_type_infoE, ___cxa_allocate_exception
+                          ___cxa_begin_catch, ___cxa_call_unexpected, ___cxa_current_exception_type
+                          ___cxa_current_primary_exception, ___cxa_decrement_exception_refcount, ___cxa_demangle
+                          ___cxa_end_catch, ___cxa_free_exception, ___cxa_get_exception_ptr, ___cxa_get_globals
+                          ___cxa_get_globals_fast, ___cxa_guard_abort, ___cxa_guard_acquire, ___cxa_guard_release
+                          ___cxa_increment_exception_refcount, ___cxa_new_handler, ___cxa_pure_virtual
+                          ___cxa_rethrow, ___cxa_rethrow_primary_exception, ___cxa_terminate_handler, ___cxa_throw
+                          ___cxa_uncaught_exception, ___cxa_unexpected_handler, ___cxa_vec_cctor, ___cxa_vec_cleanup
+                          ___cxa_vec_ctor, ___cxa_vec_delete, ___cxa_vec_delete2, ___cxa_vec_delete3
+                          ___cxa_vec_dtor, ___cxa_vec_new, ___cxa_vec_new2, ___cxa_vec_new3, ___dynamic_cast
+                          ___gxx_personality_sj0 ]
+...

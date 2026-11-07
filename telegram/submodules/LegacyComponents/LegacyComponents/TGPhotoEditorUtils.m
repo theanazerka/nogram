@@ -5,6 +5,7 @@
 
 #import <AVFoundation/AVFoundation.h>
 #import <Accelerate/Accelerate.h>
+#include <dlfcn.h>
 
 const CGSize TGPhotoEditorResultImageMaxSize = { 1280, 1280 };
 const CGSize TGPhotoEditorScreenImageHardLimitSize = { 750, 750 };
@@ -92,10 +93,16 @@ CGFloat TGRadiansToDegrees(CGFloat radians)
     return radians * 180.0f / (CGFloat)M_PI;
 }
 
+// vImageBuffer_InitWithCGImage / vImageCreateCGImageFromBuffer appeared in iOS 7. A direct
+// reference makes dyld refuse to launch the app on iOS 6, so resolve them at runtime.
+typedef vImage_Error (*TGvImageBufferInitWithCGImage)(vImage_Buffer *, vImage_CGImageFormat *, const CGFloat *, CGImageRef, vImage_Flags);
+typedef CGImageRef (*TGvImageCreateCGImageFromBuffer)(const vImage_Buffer *, vImage_CGImageFormat *, void (*)(void *, void *), void *, vImage_Flags, vImage_Error *);
+#define vImageBuffer_InitWithCGImage(...) ((TGvImageBufferInitWithCGImage)dlsym(RTLD_DEFAULT, "vImageBuffer_InitWithCGImage"))(__VA_ARGS__)
+#define vImageCreateCGImageFromBuffer(...) ((TGvImageCreateCGImageFromBuffer)dlsym(RTLD_DEFAULT, "vImageCreateCGImageFromBuffer"))(__VA_ARGS__)
+
 CGImageRef TGPhotoLanczosResize(UIImage *image, CGSize targetSize)
 {
-    // vImageBuffer_InitWithCGImage / vImageCreateCGImageFromBuffer are iOS 7+ (Accelerate is weak-linked).
-    if (&vImageBuffer_InitWithCGImage == NULL || &vImageCreateCGImageFromBuffer == NULL)
+    if (dlsym(RTLD_DEFAULT, "vImageBuffer_InitWithCGImage") == NULL || dlsym(RTLD_DEFAULT, "vImageCreateCGImageFromBuffer") == NULL)
         return nil;
 
     if (TGOrientationIsSideward(image.imageOrientation, NULL))
