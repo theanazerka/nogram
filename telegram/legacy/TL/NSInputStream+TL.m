@@ -1,6 +1,11 @@
 #import "NSInputStream+TL.h"
 
-#import <endian.h>
+#include <machine/endian.h>
+#ifndef __BYTE_ORDER
+#   define __BYTE_ORDER BYTE_ORDER
+#   define __LITTLE_ENDIAN LITTLE_ENDIAN
+#   define __BIG_ENDIAN BIG_ENDIAN
+#endif
 
 static inline int roundUpInput(int numToRound, int multiple)
 {

@@ -18,7 +18,7 @@ include sources.mk
 
 APPLICATION_NAME = Telegram
 
-MTPROTO_DIR = vendor/MTProtoKit
+MTPROTO_DIR = vendor/MtProtoKit-4.9.1
 MTPROTO_MRC_FILES = $(MTPROTO_DIR)/AFHTTPClient.m $(MTPROTO_DIR)/AFHTTPRequestOperation.m $(MTPROTO_DIR)/AFJSONUtilities.m $(MTPROTO_DIR)/AFURLConnectionOperation.m
 MTPROTO_FILES = $(wildcard $(MTPROTO_DIR)/*.m)
 
@@ -45,7 +45,7 @@ Telegram_CFLAGS = -fobjc-arc -include BuildConfig.h \
 	-Ithirdparty/Stripe \
 	$(foreach d,$(TG_QUOTE_DIRS),-iquote $(d)) \
 	-DNS_BLOCK_ASSERTIONS -DSQLITE_TEMP_STORE=2 -DSQLITE_HAS_CODEC=1 -DSQLCIPHER_CRYPTO_CC=1 -DSQLITE_ENABLE_FTS3 \
-	-DTGVOIP_USE_CUSTOM_CRYPTO -DTGVOIP_USE_AUDIO_SESSION -DWEBRTC_APM_DEBUG_DUMP=0 -DWEBRTC_POSIX -DTGVOIP_HAVE_TGLOG \
+	-DTGVOIP_USE_CUSTOM_CRYPTO -DWEBRTC_APM_DEBUG_DUMP=0 -DWEBRTC_POSIX -DTGVOIP_HAVE_TGLOG \
 	-Wno-everything -Wno-error -ferror-limit=0
 Telegram_CCFLAGS = -std=gnu++11 -stdlib=libc++
 Telegram_LDFLAGS = -ObjC -stdlib=libc++ \
