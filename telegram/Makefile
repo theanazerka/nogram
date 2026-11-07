@@ -56,7 +56,7 @@ Telegram_CFLAGS = -fobjc-arc -include BuildConfig.h \
 	-DTGVOIP_USE_CUSTOM_CRYPTO -DWEBRTC_APM_DEBUG_DUMP=0 -DWEBRTC_POSIX -DTGVOIP_HAVE_TGLOG \
 	-Wno-everything -Wno-error -ferror-limit=0
 Telegram_CCFLAGS = -std=gnu++11 -stdlib=libc++
-Telegram_LDFLAGS = -ObjC -stdlib=libc++ \
+Telegram_LDFLAGS = -ObjC -nostdlib++ \
 	vendor/openssl/lib/libcrypto.a thirdparty/WebP.framework/WebP Telegraph/thirdparty/opus/lib/libopus.a \
 	Telegraph/thirdparty/HockeySDK-iOS-3/HockeySDK.embeddedframework/HockeySDK.framework/HockeySDK \
 	compat/lib/libc++.tbd compat/lib/libc++abi.tbd -lz -licucore
