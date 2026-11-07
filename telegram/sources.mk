@@ -1264,49 +1264,49 @@ TG_APP_FILES = \
 	Telegraph/TGWorkerTask.m \
 	Telegraph/TGYoutubeContentPropertiesActor.m \
 	Telegraph/TGYoutubeDataContentProperty.m \
-	Telegraph/TLBotInlineMessage$botInlineMessageMediaAuto.mm \
-	Telegraph/TLBotInlineMessage$botInlineMessageMediaContact.mm \
-	Telegraph/TLBotInlineMessage$botInlineMessageMediaGeo.mm \
-	Telegraph/TLBotInlineMessage$botInlineMessageMediaVenue.mm \
-	Telegraph/TLBotInlineMessage$botInlineMessageText.mm \
-	Telegraph/TLBotInlineResult$botInlineMediaResult.mm \
-	Telegraph/TLBotInlineResult$botInlineResult.mm \
-	Telegraph/TLChat$channel.mm \
-	Telegraph/TLChat$channelForbidden.mm \
-	Telegraph/TLChat$chat.mm \
-	Telegraph/TLChatFull$channelFull.mm \
-	Telegraph/TLChatInvite$chatInvite.mm \
-	Telegraph/TLChatParticipants$chatParticipantsForbidden.mm \
-	Telegraph/TLConfig$config.mm \
-	Telegraph/TLDcOption$modernDcOption.mm \
-	Telegraph/TLDialog$dialog.mm \
-	Telegraph/TLDialog$dialogFeed.mm \
-	Telegraph/TLDocumentAttribute$documentAttributeAudio.m \
+	Telegraph/TLBotInlineMessage_botInlineMessageMediaAuto.mm \
+	Telegraph/TLBotInlineMessage_botInlineMessageMediaContact.mm \
+	Telegraph/TLBotInlineMessage_botInlineMessageMediaGeo.mm \
+	Telegraph/TLBotInlineMessage_botInlineMessageMediaVenue.mm \
+	Telegraph/TLBotInlineMessage_botInlineMessageText.mm \
+	Telegraph/TLBotInlineResult_botInlineMediaResult.mm \
+	Telegraph/TLBotInlineResult_botInlineResult.mm \
+	Telegraph/TLChatFull_channelFull.mm \
+	Telegraph/TLChatInvite_chatInvite.mm \
+	Telegraph/TLChatParticipants_chatParticipantsForbidden.mm \
+	Telegraph/TLChat_channel.mm \
+	Telegraph/TLChat_channelForbidden.mm \
+	Telegraph/TLChat_chat.mm \
+	Telegraph/TLConfig_config.mm \
+	Telegraph/TLDcOption_modernDcOption.mm \
+	Telegraph/TLDialog_dialog.mm \
+	Telegraph/TLDialog_dialogFeed.mm \
 	Telegraph/TLDocumentAttributeSticker.mm \
-	Telegraph/TLDraftMessage$draftMessage.mm \
-	Telegraph/TLGame$game.mm \
+	Telegraph/TLDocumentAttribute_documentAttributeAudio.m \
+	Telegraph/TLDraftMessage_draftMessage.mm \
+	Telegraph/TLGame_game.mm \
 	Telegraph/TLInputMediaUploadedDocument.mm \
 	Telegraph/TLInputMediaUploadedPhoto.mm \
-	Telegraph/TLInputPeerNotifySettings$inputPeerNotifySettings.mm \
-	Telegraph/TLInputSecureValue$inputSecureValue.mm \
-	Telegraph/TLInputSingleMedia$inputSingleMedia.mm \
-	Telegraph/TLInvoice$invoice.mm \
+	Telegraph/TLInputPeerNotifySettings_inputPeerNotifySettings.mm \
+	Telegraph/TLInputSecureValue_inputSecureValue.mm \
+	Telegraph/TLInputSingleMedia_inputSingleMedia.mm \
+	Telegraph/TLInvoice_invoice.mm \
 	Telegraph/TLLangPackStringPluralized.m \
-	Telegraph/TLMessage$modernMessage.mm \
-	Telegraph/TLMessage$modernMessageService.mm \
-	Telegraph/TLMessageAction$messageActionPhoneCall.mm \
-	Telegraph/TLMessageFwdHeader$messageFwdHeader.mm \
-	Telegraph/TLMessageMedia$messageMediaDocument.mm \
-	Telegraph/TLMessageMedia$messageMediaInvoice.mm \
-	Telegraph/TLMessageMedia$messageMediaPhoto.mm \
-	Telegraph/TLMessages_BotResults$botResults.mm \
-	Telegraph/TLPageBlock$pageBlockEmbed.mm \
-	Telegraph/TLPaymentRequestedInfo$paymentRequestedInfo.mm \
-	Telegraph/TLPayments_PaymentCeceipt$payments_paymentReceipt.mm \
+	Telegraph/TLMessageAction_messageActionPhoneCall.mm \
+	Telegraph/TLMessageFwdHeader_messageFwdHeader.mm \
+	Telegraph/TLMessageMedia_messageMediaDocument.mm \
+	Telegraph/TLMessageMedia_messageMediaInvoice.mm \
+	Telegraph/TLMessageMedia_messageMediaPhoto.mm \
+	Telegraph/TLMessage_modernMessage.mm \
+	Telegraph/TLMessage_modernMessageService.mm \
+	Telegraph/TLMessages_BotResults_botResults.mm \
+	Telegraph/TLPageBlock_pageBlockEmbed.mm \
+	Telegraph/TLPaymentRequestedInfo_paymentRequestedInfo.mm \
+	Telegraph/TLPayments_PaymentCeceipt_payments_paymentReceipt.mm \
 	Telegraph/TLPayments_sendPaymentForm.mm \
-	Telegraph/TLPeerNotifySettings$peerNotifySettings.mm \
-	Telegraph/TLPhoneCall$phoneCallDiscarded.mm \
-	Telegraph/TLPhoneCall$phoneCallWaiting.mm \
+	Telegraph/TLPeerNotifySettings_peerNotifySettings.mm \
+	Telegraph/TLPhoneCall_phoneCallDiscarded.mm \
+	Telegraph/TLPhoneCall_phoneCallWaiting.mm \
 	Telegraph/TLRPCaccount_acceptAuthorization.mm \
 	Telegraph/TLRPCaccount_deleteSecureValue.mm \
 	Telegraph/TLRPCaccount_getAllSecureValues.mm \
@@ -1347,39 +1347,39 @@ TG_APP_FILES = \
 	Telegraph/TLRPCmessages_searchStickerSets.mm \
 	Telegraph/TLRPCmessages_sendInlineBotResult.mm \
 	Telegraph/TLRPCmessages_sendMultiMedia.mm \
-	Telegraph/TLSecureValue$secureValue.mm \
-	Telegraph/TLStickerSet$stickerSet.mm \
-	Telegraph/TLUpdate$updateChannelTooLong.m \
-	Telegraph/TLUpdate$updatePinnedDialogs.mm \
-	Telegraph/TLUpdate$updateReadFeed.mm \
-	Telegraph/TLUpdate$updateServiceNotification.mm \
-	Telegraph/TLUpdates$modernUpdateShortChatMessage.mm \
-	Telegraph/TLUpdates$modernUpdateShortMessage.mm \
-	Telegraph/TLUpdates$updateShortSentMessage.mm \
+	Telegraph/TLSecureValue_secureValue.mm \
+	Telegraph/TLStickerSet_stickerSet.mm \
+	Telegraph/TLUpdate_updateChannelTooLong.m \
+	Telegraph/TLUpdate_updatePinnedDialogs.mm \
+	Telegraph/TLUpdate_updateReadFeed.mm \
+	Telegraph/TLUpdate_updateServiceNotification.mm \
 	Telegraph/TLUpdates+TG.m \
 	Telegraph/TLUpdates_ChannelDifference_manual.mm \
-	Telegraph/TLUser$modernUser.mm \
-	Telegraph/TLUserFull$userFull.mm \
-	Telegraph/TLWebPage$webPageExternal.mm \
+	Telegraph/TLUpdates_modernUpdateShortChatMessage.mm \
+	Telegraph/TLUpdates_modernUpdateShortMessage.mm \
+	Telegraph/TLUpdates_updateShortSentMessage.mm \
+	Telegraph/TLUserFull_userFull.mm \
+	Telegraph/TLUser_modernUser.mm \
 	Telegraph/TLWebPage_manual.mm \
-	Telegraph/TLaccount_AuthorizationForm$account_authorizationForm.mm \
-	Telegraph/TLaccount_Password$account_password.mm \
-	Telegraph/TLaccount_PasswordSettings$account_passwordSettings.mm \
-	Telegraph/TLaccount_updateProfile$updateProfile.m \
-	Telegraph/TLauth_Authorization$auth_authorization.mm \
-	Telegraph/TLauth_SentCode$auth_sentCode.mm \
+	Telegraph/TLWebPage_webPageExternal.mm \
+	Telegraph/TLaccount_AuthorizationForm_account_authorizationForm.mm \
+	Telegraph/TLaccount_PasswordSettings_account_passwordSettings.mm \
+	Telegraph/TLaccount_Password_account_password.mm \
+	Telegraph/TLaccount_updateProfile_updateProfile.m \
+	Telegraph/TLauth_Authorization_auth_authorization.mm \
+	Telegraph/TLauth_SentCode_auth_sentCode.mm \
 	Telegraph/TLchannelDifferenceTooLong.mm \
-	Telegraph/TLchannels_FeedSources$channels_feedSources.mm \
-	Telegraph/TLhelp_AppUpdate$help_appUpdate.mm \
-	Telegraph/TLhelp_DeepLinkInfo$help_deepLinkInfo.mm \
+	Telegraph/TLchannels_FeedSources_channels_feedSources.mm \
+	Telegraph/TLhelp_AppUpdate_help_appUpdate.mm \
+	Telegraph/TLhelp_DeepLinkInfo_help_deepLinkInfo.mm \
 	Telegraph/TLhelp_ProxyData.mm \
-	Telegraph/TLhelp_TermsOfService$help_termsOfService.mm \
-	Telegraph/TLmessages_BotCallbackAnswer$botCallbackAnswer.mm \
-	Telegraph/TLmessages_FeedMessages$messages_feedMessages.mm \
-	Telegraph/TLmessages_Messages$modernChannelMessages.mm \
-	Telegraph/TLpayments_PaymentForm$payments_paymentForm.mm \
-	Telegraph/TLpayments_SavedInfo$payments_savedInfo.mm \
-	Telegraph/TLpayments_ValidatedRequestedInfo$payments_validatedRequestedInfo.mm \
+	Telegraph/TLhelp_TermsOfService_help_termsOfService.mm \
+	Telegraph/TLmessages_BotCallbackAnswer_botCallbackAnswer.mm \
+	Telegraph/TLmessages_FeedMessages_messages_feedMessages.mm \
+	Telegraph/TLmessages_Messages_modernChannelMessages.mm \
+	Telegraph/TLpayments_PaymentForm_payments_paymentForm.mm \
+	Telegraph/TLpayments_SavedInfo_payments_savedInfo.mm \
+	Telegraph/TLpayments_ValidatedRequestedInfo_payments_validatedRequestedInfo.mm \
 	Telegraph/TelegramMediaResources.m \
 	Telegraph/TransformImageView.m \
 	Telegraph/UIViewController+Proxy.m \
@@ -1482,14 +1482,14 @@ TG_APP_FILES = \
 	legacy/TL/TLMetaObject.mm \
 	legacy/TL/TLMetaRpc.mm \
 	legacy/TL/TLMetaType.mm \
-	legacy/TL/TLMsgsAck$msgs_ack_manual.m \
+	legacy/TL/TLMsgsAck_msgs_ack_manual.m \
 	legacy/TL/TLObject.mm \
 	legacy/TL/TLRPCmessages_sendMedia_manual.mm \
 	legacy/TL/TLRPCmessages_sendMessage_manual.mm \
-	legacy/TL/TLResPQ$resPQ_manual.m \
+	legacy/TL/TLResPQ_resPQ_manual.m \
 	legacy/TL/TLRpcResult.mm \
 	legacy/TL/TLSerializationContext.m \
-	legacy/TL/TLUpdate$updateChangePts.m \
+	legacy/TL/TLUpdate_updateChangePts.m \
 	legacy/TL/TLaccount_PasswordInputSettings_manual.mm \
 	legacy/TelegraphKit/TGAcceptEncryptionFutureAction.m \
 	legacy/TelegraphKit/TGActionTableView.m \

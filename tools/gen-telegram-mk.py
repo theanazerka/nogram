@@ -42,6 +42,9 @@ def main():
                 continue
             path = os.path.normpath(os.path.join(prefix, path))
             path = path.replace('thirdparty/Video Encoder', 'thirdparty/VideoEncoder')
+            # make cannot handle '$' in file names; the sources were renamed to '_'.
+            if '$' in os.path.basename(path):
+                path = os.path.join(os.path.dirname(path), os.path.basename(path).replace('$', '_'))
             if not os.path.exists(os.path.join(ROOT, path)):
                 missing.append(path)
                 continue
