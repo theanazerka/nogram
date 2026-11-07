@@ -22,6 +22,8 @@ def exports(path):
         if m:
             syms.add(m.group(1))
         m = re.match(r'\s*\[re-export\]\s+(\S+)', line)
+        if m:
+            syms.add(m.group(1))  # per-symbol re-export, e.g. libc++ -> libc++abi on iOS 6
     if not syms:
         for line in run('llvm-nm', '--arch=armv7', '-gU', real).splitlines():
             parts = line.split()
