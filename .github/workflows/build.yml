@@ -27,12 +27,12 @@ jobs:
           curl -fsSL https://github.com/L1ghtmann/llvm-project/releases/latest/download/iOSToolchain-x86_64.tar.xz | tar -xJf - -C "$THEOS/toolchain/"
           "$THEOS/toolchain/linux/iphone/bin/clang" --version
 
-      - name: Install iPhoneOS 9.3 SDK
+      - name: Install iPhoneOS 10.3 SDK
         run: |
           git clone --depth 1 --filter=blob:none --sparse https://github.com/theos/sdks.git /tmp/sdks
-          git -C /tmp/sdks sparse-checkout set iPhoneOS9.3.sdk
+          git -C /tmp/sdks sparse-checkout set iPhoneOS10.3.sdk
           mkdir -p "$THEOS/sdks"
-          mv /tmp/sdks/iPhoneOS9.3.sdk "$THEOS/sdks/"
+          mv /tmp/sdks/iPhoneOS10.3.sdk "$THEOS/sdks/"
 
       - name: Build
         working-directory: nogram
