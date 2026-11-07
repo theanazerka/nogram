@@ -56,13 +56,18 @@ jobs:
           mkdir -p "$THEOS/toolchain"
           curl -fsSL https://github.com/L1ghtmann/llvm-project/releases/latest/download/iOSToolchain-x86_64.tar.xz | tar -xJf - -C "$THEOS/toolchain/"
           "$THEOS/toolchain/linux/iphone/bin/clang" --version
-          # Report every compile error in one run instead of stopping at the first one.
-          sed -i 's/--no-keep-going/--keep-going/g' "$THEOS/makefiles/common.mk" "$THEOS/makefiles/instance/rules.mk"
           # SDK goes in here too so the whole directory is cached.
           git clone --depth 1 --filter=blob:none --sparse https://github.com/theos/sdks.git /tmp/sdks
           git -C /tmp/sdks sparse-checkout set iPhoneOS11.4.sdk
           mkdir -p "$THEOS/sdks"
           mv /tmp/sdks/iPhoneOS11.4.sdk "$THEOS/sdks/"
+
+      - name: Patch Theos
+        run: |
+          # Report every compile error in one run instead of stopping at the first one.
+          sed -i 's/--no-keep-going/--keep-going/g' "$THEOS/makefiles/common.mk" "$THEOS/makefiles/instance/rules.mk"
+          # Link through -filelist: ~3000 object paths overflow bash's 128 KiB argument limit.
+          python3 nogram/tools/patch-theos-link.py "$THEOS/makefiles/instance/rules.mk"
 
       - name: Build
         working-directory: nogram/${{ matrix.project }}
