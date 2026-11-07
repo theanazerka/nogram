@@ -1,0 +1,59 @@
+name: Build
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    env:
+      THEOS: ${{ github.workspace }}/theos
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: nogram
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential fakeroot rsync curl perl git libxml2 libtinfo5 zip python3
+
+      - name: Install Theos
+        run: |
+          git clone --recursive --depth 1 https://github.com/theos/theos.git "$THEOS"
+          mkdir -p "$THEOS/toolchain"
+          curl -fsSL https://github.com/L1ghtmann/llvm-project/releases/latest/download/iOSToolchain-x86_64.tar.xz | tar -xJf - -C "$THEOS/toolchain/"
+          "$THEOS/toolchain/linux/iphone/bin/clang" --version
+
+      - name: Install iPhoneOS 9.3 SDK
+        run: |
+          git clone --depth 1 --filter=blob:none --sparse https://github.com/theos/sdks.git /tmp/sdks
+          git -C /tmp/sdks sparse-checkout set iPhoneOS9.3.sdk
+          mkdir -p "$THEOS/sdks"
+          mv /tmp/sdks/iPhoneOS9.3.sdk "$THEOS/sdks/"
+
+      - name: Build
+        working-directory: nogram
+        env:
+          TG_API_ID: ${{ secrets.TG_API_ID }}
+          TG_API_HASH: ${{ secrets.TG_API_HASH }}
+        run: |
+          make ipa FINALPACKAGE=1 TG_API_ID="$TG_API_ID" TG_API_HASH="$TG_API_HASH" -j"$(nproc)"
+          ls -la packages
+
+      - name: Inspect binary
+        working-directory: nogram
+        run: |
+          BIN=.theos/_/Applications/nogram.app/nogram
+          file "$BIN" || true
+          "$THEOS/toolchain/linux/iphone/bin/otool" -l "$BIN" | grep -A4 -E "LC_VERSION_MIN_IPHONEOS|LC_BUILD_VERSION" || true
+          "$THEOS/toolchain/linux/iphone/bin/otool" -L "$BIN" || true
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nogram
+          path: |
+            nogram/packages/*.deb
+            nogram/packages/*.ipa

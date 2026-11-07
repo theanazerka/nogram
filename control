@@ -1,0 +1,9 @@
+Package: com.nogram.client
+Name: nogram
+Version: 0.1.0
+Architecture: iphoneos-arm
+Description: Lightweight Telegram client for iOS 6+ (MTProto layer 232).
+Maintainer: nogram
+Author: nogram
+Section: Social
+Depends: firmware (>= 6.0)
