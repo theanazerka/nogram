@@ -45,6 +45,11 @@ def main():
             if not os.path.exists(os.path.join(ROOT, path)):
                 missing.append(path)
                 continue
+            # Theos hands the whole file list to one shell argument (128 KiB limit):
+            # shorten the longest prefixes through symlinks.
+            for long_prefix, short in (('submodules/LegacyComponents/LegacyComponents/', 'lc/'), ('legacy/TL/TL/', 'tl/')):
+                if path.startswith(long_prefix):
+                    path = short + path[len(long_prefix):]
             files.append(path)
             if cflags.strip():
                 flags.append((path, cflags.strip()))
