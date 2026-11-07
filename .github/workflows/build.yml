@@ -76,6 +76,8 @@ jobs:
           TG_API_HASH: ${{ secrets.TG_API_HASH }}
         run: |
           set -o pipefail
+          # Objects come from cache, but always relink: make does not notice LDFLAGS changes.
+          find .theos/obj -maxdepth 2 -name '*.app' -type d -prune -exec rm -r {} + 2>/dev/null || true
           # Every CI build gets a higher version so Cydia offers it as an update.
           VERSION="$(sed -n 's/^Version: *//p' control)-${{ github.run_number }}"
           make ipa FINALPACKAGE=1 PACKAGE_VERSION="$VERSION" TG_API_ID="$TG_API_ID" TG_API_HASH="$TG_API_HASH" -j"$(nproc)" -k 2>&1 | tee build.log
