@@ -1,0 +1,17 @@
+Origin: nogram
+Label: nogram
+Suite: stable
+Version: 1.0
+Codename: ios
+Architectures: iphoneos-arm
+Components: main
+Description: Original Telegram 4.9.1 rebuilt for iOS 6, built by GitHub Actions
+Date: Sat, 07 Nov 2026 18:20:54 UTC
+MD5Sum:
+ 450ac2ab85cef6f9702b4987b9ba7267 522 Packages
+ 2e6519eaa683a82ecb45b14a7141526d 381 Packages.gz
+ 83925987983af0e46a68fe217a644b8b 400 Packages.bz2
+SHA256:
+ 68ab88189f45ecd60c8a4a842615e820171876cc8ab3eb2126864f9712cb33f7 522 Packages
+ 5ea3b3836d49f978f4835cc5b6f7f5e086ff4a02ef49735fbe7c50965f1f6b8e 381 Packages.gz
+ 714fb91b6e172299c8a565eb018592d18d77411e0e703bb6d78a23cdc6329359 400 Packages.bz2

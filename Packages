@@ -1,0 +1,16 @@
+Package: org.telegram.legacy
+Version: 4.9.1-47
+Architecture: iphoneos-arm
+Maintainer: nogram
+Installed-Size: 36368
+Depends: firmware (>= 6.0)
+Filename: debs/org.telegram.legacy_4.9.1-47_iphoneos-arm.deb
+Size: 17177620
+MD5sum: 3178bfcf6b9f3fe56ba7866df499a7cf
+SHA1: 74f9d3f77740e68d397f2ada2e4f26ff7cf67ce0
+SHA256: c3036f8bd90fabb285e1d753724f88610dca86682c1b54c165a11f7416e333b4
+Section: Social
+Description: Original Telegram iOS 4.9.1 rebuilt for iOS 6 with Theos.
+Author: Telegram / nogram
+Name: Telegram 4.9.1 (iOS 6)
+
