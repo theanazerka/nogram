@@ -10,6 +10,8 @@
 TARGET := iphone:clang:9.3:6.0
 ARCHS = armv7
 THEOS_PLATFORM_DEB_COMPRESSION_TYPE = gzip
+# Vendored MtProtoKit/AFNetworking are full of legacy warnings.
+GO_EASY_ON_ME = 1
 
 include $(THEOS)/makefiles/common.mk
 
@@ -23,7 +25,7 @@ nogram_CFLAGS = -fobjc-arc -Ivendor/include -I$(MTPROTO_DIR) -Ivendor/openssl/in
 	-Wno-deprecated-declarations -Wno-unused-parameter -Wno-nullability-completeness \
 	-Wno-unused-variable -Wno-unused-function -Wno-objc-missing-super-calls \
 	-Wno-strict-prototypes -Wno-incompatible-pointer-types-discards-qualifiers -Wno-unguarded-availability \
-	-Wno-error
+	-Wno-error -Wno-undef-prefix
 nogram_LDFLAGS = vendor/openssl/lib/libcrypto.a -lz
 nogram_FRAMEWORKS = UIKit Foundation CoreGraphics QuartzCore Security SystemConfiguration CFNetwork MobileCoreServices
 

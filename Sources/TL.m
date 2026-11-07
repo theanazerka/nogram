@@ -91,6 +91,8 @@ static TLCombinator *TLMakeCombinator(NSArray *item)
         _methodsByName = [[NSMutableDictionary alloc] init];
 
         NSString *path = [[NSBundle mainBundle] pathForResource:@"scheme" ofType:@"json"];
+        if (path == nil)
+            path = [[[NSProcessInfo processInfo] environment] objectForKey:@"TL_SCHEME_PATH"]; // unit tests
         NSData *data = path != nil ? [NSData dataWithContentsOfFile:path] : nil;
         NSDictionary *json = data != nil ? [NSJSONSerialization JSONObjectWithData:data options:0 error:NULL] : nil;
         if (![json isKindOfClass:[NSDictionary class]])
