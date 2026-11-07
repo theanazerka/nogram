@@ -141,7 +141,7 @@
 #import "TGPassportRequestController.h"
 
 #import <Intents/Intents.h>
-#import <Pushkit/Pushkit.h>
+#import <PushKit/PushKit.h>
 
 #import "TGWebpageSignals.h"
 #import "TGInstantPageController.h"
