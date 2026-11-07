@@ -20,13 +20,37 @@ jobs:
       - uses: actions/checkout@v4
         with:
           path: nogram
+          fetch-depth: 0   # full history for git restore-mtime
+
+      # --- caches: toolchain + compiled objects, so CI only rebuilds what changed ---
+      - name: Restore Theos/toolchain/SDK cache
+        id: theos-cache
+        uses: actions/cache@v4
+        with:
+          path: theos
+          key: theos-11.4-${{ hashFiles('nogram/.github/workflows/build.yml') }}
+
+      - name: Restore object cache
+        uses: actions/cache/restore@v4
+        with:
+          path: nogram/${{ matrix.project }}/.theos
+          key: obj-${{ matrix.project }}-${{ github.sha }}
+          restore-keys: obj-${{ matrix.project }}-
 
       - name: Install build dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential fakeroot curl perl git libxml2 libtinfo5 zip python3
+          sudo apt-get install -y build-essential fakeroot curl perl git libxml2 libtinfo5 zip python3 git-restore-mtime
+
+      - name: Restore file timestamps from git history
+        working-directory: nogram
+        run: |
+          # Fresh checkouts make every file "new"; give files their last-commit time so
+          # make reuses cached objects for unchanged sources.
+          git restore-mtime --quiet
 
       - name: Install Theos
+        if: steps.theos-cache.outputs.cache-hit != 'true'
         run: |
           git clone --recursive --depth 1 https://github.com/theos/theos.git "$THEOS"
           mkdir -p "$THEOS/toolchain"
@@ -34,10 +58,7 @@ jobs:
           "$THEOS/toolchain/linux/iphone/bin/clang" --version
           # Report every compile error in one run instead of stopping at the first one.
           sed -i 's/--no-keep-going/--keep-going/g' "$THEOS/makefiles/common.mk" "$THEOS/makefiles/instance/rules.mk"
-
-      - name: Install iPhoneOS 11.4 SDK
-        run: |
-          # 11.4 is the last SDK whose .tbd stubs still contain armv7 (iOS 6 devices).
+          # SDK goes in here too so the whole directory is cached.
           git clone --depth 1 --filter=blob:none --sparse https://github.com/theos/sdks.git /tmp/sdks
           git -C /tmp/sdks sparse-checkout set iPhoneOS11.4.sdk
           mkdir -p "$THEOS/sdks"
@@ -52,6 +73,13 @@ jobs:
           set -o pipefail
           make ipa FINALPACKAGE=1 TG_API_ID="$TG_API_ID" TG_API_HASH="$TG_API_HASH" -j"$(nproc)" -k 2>&1 | tee build.log
           ls -la packages
+
+      - name: Save object cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: nogram/${{ matrix.project }}/.theos
+          key: obj-${{ matrix.project }}-${{ github.sha }}
 
       - name: Error summary
         if: failure()
