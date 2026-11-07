@@ -8,6 +8,12 @@ on:
 jobs:
   build:
     runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        project:
+          - telegram   # original Telegram iOS 4.9.1
+          - lite       # minimal client (fallback)
     env:
       THEOS: ${{ github.workspace }}/theos
     steps:
@@ -18,7 +24,7 @@ jobs:
       - name: Install build dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential fakeroot rsync curl perl git libxml2 libtinfo5 zip python3
+          sudo apt-get install -y build-essential fakeroot curl perl git libxml2 libtinfo5 zip python3
 
       - name: Install Theos
         run: |
@@ -27,37 +33,51 @@ jobs:
           curl -fsSL https://github.com/L1ghtmann/llvm-project/releases/latest/download/iOSToolchain-x86_64.tar.xz | tar -xJf - -C "$THEOS/toolchain/"
           "$THEOS/toolchain/linux/iphone/bin/clang" --version
 
-      - name: Install iPhoneOS 10.3 SDK (+ armv7 symbols from 9.3)
+      - name: Install iPhoneOS 11.4 SDK
         run: |
-          # 10.3 .tbd stubs lack armv7-only symbols (objc_msgSend_stret, compiler_rt);
-          # 9.3 stubs have them but current ld64 rejects their old format.
-          # tools/fix-sdk.py merges the missing armv7 symbols into the 10.3 stubs.
+          # 11.4 is the last SDK whose .tbd stubs still contain armv7 (iOS 6 devices).
           git clone --depth 1 --filter=blob:none --sparse https://github.com/theos/sdks.git /tmp/sdks
-          git -C /tmp/sdks sparse-checkout set iPhoneOS9.3.sdk iPhoneOS10.3.sdk
-          python3 nogram/tools/fix-sdk.py /tmp/sdks/iPhoneOS9.3.sdk /tmp/sdks/iPhoneOS10.3.sdk
+          git -C /tmp/sdks sparse-checkout set iPhoneOS11.4.sdk
           mkdir -p "$THEOS/sdks"
-          mv /tmp/sdks/iPhoneOS10.3.sdk "$THEOS/sdks/"
+          mv /tmp/sdks/iPhoneOS11.4.sdk "$THEOS/sdks/"
 
       - name: Build
-        working-directory: nogram
+        working-directory: nogram/${{ matrix.project }}
         env:
           TG_API_ID: ${{ secrets.TG_API_ID }}
           TG_API_HASH: ${{ secrets.TG_API_HASH }}
         run: |
-          make ipa FINALPACKAGE=1 TG_API_ID="$TG_API_ID" TG_API_HASH="$TG_API_HASH" -j"$(nproc)"
+          set -o pipefail
+          make ipa FINALPACKAGE=1 TG_API_ID="$TG_API_ID" TG_API_HASH="$TG_API_HASH" -j"$(nproc)" -k 2>&1 | tee build.log
           ls -la packages
 
-      - name: Inspect binary
-        working-directory: nogram
+      - name: Error summary
+        if: failure()
+        working-directory: nogram/${{ matrix.project }}
         run: |
-          BIN=.theos/_/Applications/nogram.app/nogram
+          grep -E "error:|Undefined symbols|ld: " build.log | sed -E 's/\x1b\[[0-9;]*m//g' | sort | uniq -c | sort -rn | head -150 || true
+          echo "----- files with errors -----"
+          sed -E 's/\x1b\[[0-9;]*m//g' build.log | grep -oE "^[^ :]+\.(m|mm|c|cpp|h):[0-9]+:[0-9]+: (fatal )?error" | cut -d: -f1 | sort | uniq -c | sort -rn | head -80 || true
+
+      - name: Upload build log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log-${{ matrix.project }}
+          path: nogram/${{ matrix.project }}/build.log
+
+      - name: Inspect binary
+        working-directory: nogram/${{ matrix.project }}
+        run: |
+          APP=$(ls -d .theos/_/Applications/*.app)
+          BIN="$APP/$(basename "$APP" .app)"
           file "$BIN" || true
           "$THEOS/toolchain/linux/iphone/bin/otool" -l "$BIN" | grep -A4 -E "LC_VERSION_MIN_IPHONEOS|LC_BUILD_VERSION" || true
           "$THEOS/toolchain/linux/iphone/bin/otool" -L "$BIN" || true
 
       - uses: actions/upload-artifact@v4
         with:
-          name: nogram
+          name: ${{ matrix.project }}
           path: |
-            nogram/packages/*.deb
-            nogram/packages/*.ipa
+            nogram/${{ matrix.project }}/packages/*.deb
+            nogram/${{ matrix.project }}/packages/*.ipa
