@@ -32,6 +32,8 @@ jobs:
           mkdir -p "$THEOS/toolchain"
           curl -fsSL https://github.com/L1ghtmann/llvm-project/releases/latest/download/iOSToolchain-x86_64.tar.xz | tar -xJf - -C "$THEOS/toolchain/"
           "$THEOS/toolchain/linux/iphone/bin/clang" --version
+          # Report every compile error in one run instead of stopping at the first one.
+          sed -i 's/--no-keep-going/--keep-going/g' "$THEOS/makefiles/common.mk" "$THEOS/makefiles/instance/rules.mk"
 
       - name: Install iPhoneOS 11.4 SDK
         run: |

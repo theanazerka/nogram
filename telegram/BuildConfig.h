@@ -16,4 +16,10 @@
 #define TELEGRAM_APP_NAME @"Telegram"
 #define TELEGRAM_APPSTORE_ID @686449807
 
+// Xcode's implicit modules made these visible everywhere.
+#ifdef __OBJC__
+#import <Foundation/Foundation.h>
+#import <MobileCoreServices/MobileCoreServices.h>
+#endif
+
 #endif
