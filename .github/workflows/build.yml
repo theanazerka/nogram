@@ -40,14 +40,14 @@ jobs:
       - name: Install build dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential fakeroot curl perl git libxml2 libtinfo5 zip python3 git-restore-mtime
+          sudo apt-get install -y build-essential fakeroot curl perl git libxml2 libtinfo5 zip python3
 
       - name: Restore file timestamps from git history
         working-directory: nogram
         run: |
           # Fresh checkouts make every file "new"; give files their last-commit time so
           # make reuses cached objects for unchanged sources.
-          git restore-mtime --quiet
+          python3 tools/restore-mtime.py
 
       - name: Install Theos
         if: steps.theos-cache.outputs.cache-hit != 'true'

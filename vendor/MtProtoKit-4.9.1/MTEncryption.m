@@ -1170,3 +1170,23 @@ NSData *MTRsaEncryptWithPad(NSString *publicKey, NSData *data)
     }
     return nil;
 }
+
+
+bool MTIsZero(NSData *value) {
+    BIGNUM *bnValue = BN_bin2bn(value.bytes, (int)value.length, NULL);
+    bool isZero = BN_is_zero(bnValue);
+    BN_free(bnValue);
+    return isZero;
+}
+
+bool MTCheckIsSafeB(NSData *b, NSData *p) {
+    BIGNUM *bnB = BN_bin2bn(b.bytes, (int)b.length, NULL);
+    BIGNUM *bnP = BN_bin2bn(p.bytes, (int)p.length, NULL);
+    BIGNUM *bnZero = BN_new();
+    BN_zero(bnZero);
+    bool result = BN_cmp(bnB, bnZero) == 1 && BN_cmp(bnB, bnP) == -1;
+    BN_free(bnB);
+    BN_free(bnP);
+    BN_free(bnZero);
+    return result;
+}

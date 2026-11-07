@@ -2181,6 +2181,7 @@ TG_APP_FILES = \
 	tl/TLhelp_Support.mm \
 	tl/TLhelp_TermsOfService.mm \
 	tl/TLhelp_TermsOfServiceUpdate.mm \
+	tl/TLinvokeWithLayer.mm \
 	tl/TLmessages_AffectedHistory.mm \
 	tl/TLmessages_AffectedMessages.mm \
 	tl/TLmessages_AllStickers.mm \

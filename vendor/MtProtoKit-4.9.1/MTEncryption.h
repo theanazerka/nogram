@@ -30,6 +30,8 @@ NSData *MTAesEncrypt(NSData *data, NSData *key, NSData *iv);
 NSData *MTAesDecrypt(NSData *data, NSData *key, NSData *iv);
 NSData *MTRsaEncrypt(NSString *publicKey, NSData *data);
 NSData *MTRsaEncryptWithPad(NSString *publicKey, NSData *data);
+bool MTIsZero(NSData *value);
+bool MTCheckIsSafeB(NSData *b, NSData *p);
 NSData *MTExp(NSData *base, NSData *exp, NSData *modulus);
 NSData *MTModSub(NSData *a, NSData *b, NSData *modulus);
 NSData *MTModMul(NSData *a, NSData *b, NSData *modulus);

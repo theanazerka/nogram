@@ -190,6 +190,33 @@ edit('MTEncryption.h', lambda s: s if 'MTRsaEncryptWithPad' in s else s.replace(
     'NSData *MTRsaEncrypt(NSString *publicKey, NSData *data);',
     'NSData *MTRsaEncrypt(NSString *publicKey, NSData *data);\nNSData *MTRsaEncryptWithPad(NSString *publicKey, NSData *data);', 1))
 
+# SRP helpers used by Telegram 4.9.1's TGTwoStepUtils but missing from 2018 revisions.
+SRP_HELPERS = r'''
+
+bool MTIsZero(NSData *value) {
+    BIGNUM *bnValue = BN_bin2bn(value.bytes, (int)value.length, NULL);
+    bool isZero = BN_is_zero(bnValue);
+    BN_free(bnValue);
+    return isZero;
+}
+
+bool MTCheckIsSafeB(NSData *b, NSData *p) {
+    BIGNUM *bnB = BN_bin2bn(b.bytes, (int)b.length, NULL);
+    BIGNUM *bnP = BN_bin2bn(p.bytes, (int)p.length, NULL);
+    BIGNUM *bnZero = BN_new();
+    BN_zero(bnZero);
+    bool result = BN_cmp(bnB, bnZero) == 1 && BN_cmp(bnB, bnP) == -1;
+    BN_free(bnB);
+    BN_free(bnP);
+    BN_free(bnZero);
+    return result;
+}
+'''
+edit('MTEncryption.m', lambda s: s if 'bool MTIsZero(' in s else s + SRP_HELPERS)
+edit('MTEncryption.h', lambda s: s if 'MTIsZero' in s else s.replace(
+    'NSData *MTRsaEncryptWithPad(NSString *publicKey, NSData *data);',
+    'NSData *MTRsaEncryptWithPad(NSString *publicKey, NSData *data);\nbool MTIsZero(NSData *value);\nbool MTCheckIsSafeB(NSData *b, NSData *p);', 1))
+
 
 def auth(s):
     anchor = 'serverPublicKeys = [[NSArray alloc] initWithObjects:\n'

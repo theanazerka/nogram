@@ -46,8 +46,14 @@ def main():
             if '$' in os.path.basename(path):
                 path = os.path.join(os.path.dirname(path), os.path.basename(path).replace('$', '_'))
             if not os.path.exists(os.path.join(ROOT, path)):
-                missing.append(path)
-                continue
+                # Xcode projects come from case-insensitive macOS file systems.
+                d, base = os.path.split(path)
+                full_dir = os.path.join(ROOT, d)
+                match = [n for n in os.listdir(full_dir) if n.lower() == base.lower()] if os.path.isdir(full_dir) else []
+                if not match:
+                    missing.append(path)
+                    continue
+                path = os.path.join(d, match[0])
             # Theos hands the whole file list to one shell argument (128 KiB limit):
             # shorten the longest prefixes through symlinks.
             for long_prefix, short in (('submodules/LegacyComponents/LegacyComponents/', 'lc/'), ('legacy/TL/TL/', 'tl/')):
