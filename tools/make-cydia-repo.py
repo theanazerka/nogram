@@ -54,7 +54,7 @@ lines = [
     'Codename: ios',
     'Architectures: iphoneos-arm',
     'Components: main',
-    'Description: Telegram 4.9.1 for iOS 6 (and the nogram lite client), built by GitHub Actions',
+    'Description: Original Telegram 4.9.1 rebuilt for iOS 6, built by GitHub Actions',
     'Date: ' + time.strftime('%a, %d %b %Y %H:%M:%S UTC', time.gmtime()),
 ]
 for algo, field in (('md5', 'MD5Sum'), ('sha256', 'SHA256')):
@@ -65,7 +65,7 @@ for algo, field in (('md5', 'MD5Sum'), ('sha256', 'SHA256')):
 with open(os.path.join(OUT, 'Release'), 'w') as f:
     f.write('\n'.join(lines) + '\n')
 
-icon = os.path.join(HERE, '..', 'lite', 'Resources', 'Icon@2x.png')
+icon = os.path.join(HERE, '..', 'telegram', 'Icon@2x.png')
 if os.path.exists(icon):
     shutil.copy2(icon, os.path.join(OUT, 'CydiaIcon.png'))
 

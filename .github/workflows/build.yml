@@ -13,7 +13,6 @@ jobs:
       matrix:
         project:
           - telegram   # original Telegram iOS 4.9.1
-          - lite       # minimal client (fallback)
     env:
       THEOS: ${{ github.workspace }}/theos
     steps:
@@ -152,7 +151,7 @@ jobs:
   # Published to the gh-pages branch (Settings -> Pages -> Deploy from a branch -> gh-pages).
   repo:
     needs: build
-    if: github.event_name != 'pull_request'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-22.04
     permissions:
       contents: write

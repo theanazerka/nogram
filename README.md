@@ -1,71 +1,35 @@
-# nogram
+# nogram — Telegram 4.9.1 для iOS 6
 
-Лёгкий клиент Telegram для **iOS 6+** (armv7), собирается через **Theos** в GitHub Actions.
+Оригинальный клиент **Telegram iOS 4.9.1** (`peter-iakovlev/Telegram`), пересобранный под
+**iOS 6** (armv7) через **Theos** в GitHub Actions.
 
-Это не ремейк Telegram 4.9.1. От него взято сетевое ядро **MtProtoKit**, а слой API написан
-заново на актуальной схеме (**layer 232**). Старый клиент 4.9.1 больше не может войти: серверы
-отвечают `UPDATE_APP_TO_LOGIN` всем клиентам на старых слоях (у 4.9.1 был слой 86).
-
-## Что работает
-
-- Вход: номер → код (SMS / в приложении / звонок / почта), привязка почты, если Telegram её требует,
-  двухэтапная аутентификация (SRP), регистрация нового аккаунта, автоматический переход на нужный DC.
-- Список чатов: подгрузка страницами, закреплённые чаты, счётчики непрочитанных, обновления в реальном времени.
-- Чат: история с подгрузкой, отправка текста, входящие в реальном времени, отметка о прочтении.
-- Медиа пока показываются текстовыми плашками: `[Фото]`, `[Стикер 😀]`, `[Голосовое, 5 сек]` и т.п.
-- Выход из аккаунта.
+Подробное техническое описание (для разработчиков и ИИ-агентов): **[AGENTS.md](AGENTS.md)**.
 
 ## Установка
 
-1. Скачайте артефакт `nogram` со страницы последнего запуска в **Actions**: в нём `.deb` и `.ipa`.
-2. Нужен джейлбрейк:
-   - `.deb` — поставить через Cydia, iFile или `dpkg -i`, затем выполнить `uicache`;
-   - `.ipa` — поставить через AppSync Unified + iFile/Filza (подпись фейковая, через ldid).
-3. При первом запуске введите свой `api_id` и `api_hash` с <https://my.telegram.org> → *API development tools*.
+Cydia → Источники → Правка → Добавить:
 
-Чтобы не вводить их на телефоне, добавьте в репозиторий секреты `TG_API_ID` и `TG_API_HASH`
-(*Settings → Secrets and variables → Actions*): workflow вшьёт их при сборке.
-
-## Сборка локально
-
-```sh
-export THEOS=~/theos            # Theos + iOS toolchain + iPhoneOS11.4.sdk в $THEOS/sdks
-make ipa FINALPACKAGE=1         # packages/nogram.ipa и packages/*.deb
-make package TG_API_ID=123 TG_API_HASH=abc...   # с вшитыми ключами
+```
+https://theanazerka.github.io/nogram/
 ```
 
-Точный рецепт окружения — в `.github/workflows/build.yml`.
+Пакет **Telegram 4.9.1 (iOS 6)** (`org.telegram.legacy`). Если старая Cydia не открывает HTTPS-адрес,
+скачайте `.deb` или `.ipa` со страницы репозитория в Safari и поставьте через iFile/Filza
+(`.ipa` — с AppSync).
 
-## Устройство
+Если приложение упало, при следующем запуске оно покажет отчёт и скопирует его в буфер обмена.
 
-| Путь | Что там |
-|---|---|
-| `tl/telegram_api.tl` | схема API (из tdlib), номер слоя в `tl/LAYER` |
-| `tools/tl2json.py` | компилирует схему в `Resources/scheme.json` (запускается при сборке) |
-| `Sources/TL.[hm]` | TL-движок: сериализует и разбирает объекты по схеме во время работы. Объекты — это `NSDictionary` с ключом `@"_"`, флаги вычисляются сами |
-| `Sources/TGNSerialization.m` | реализация `MTSerialization` для MtProtoKit |
-| `Sources/TGNClient.m` | сеть: запросы, `*_MIGRATE_X`, апдейты, выход |
-| `Sources/TGNSRP.m` | пароль 2FA (SRP) |
-| `Sources/TGNStore.m` | кэш пользователей и чатов, разбор сообщений |
-| `Sources/*Controller.m` | интерфейс на UIKit для iOS 6 |
-| `vendor/MTProtoKit` | MtProtoKit (2019) с правками, см. ниже |
-| `vendor/openssl` | OpenSSL 1.0.2, только armv7 |
+## Состояние
 
-### Правки в MtProtoKit
+- Сборка оригинала для iOS 6: готово, проверяется в CI (включая импорты против системных библиотек iOS 6).
+- Запуск на iOS 6: проверяется.
+- Вход: **пока не работает**. Нужен перевод протокола со слоя 86 на актуальный (232) и переход на
+  64-битные ID. План — в AGENTS.md, §6.
 
-- `initConnection#c1cd5ea9` вместо `#785188b8`.
-- Добавлен актуальный RSA-ключ серверов (fingerprint `d09d1d85de64fd85`).
-- Создание ключа авторизации переведено на `p_q_inner_data_dc` и `RSA_PAD`.
-  Шифрование RSA сделано через OpenSSL, а не через Security.framework: так не нужны права на keychain.
-- `auth.exportedAuthorization.id` стал 64-битным.
-- Совместимость с iOS 6 SDK: `endian.h`, `CFAutorelease`, пути импортов.
+## Сборка
 
-### Обновить слой
+CI собирает всё сам при каждом пуше. Для своего api_id задайте секреты репозитория
+`TG_API_ID` и `TG_API_HASH` (my.telegram.org). Локально: Theos + iOS toolchain + iPhoneOS11.4.sdk,
+`cd telegram && make ipa FINALPACKAGE=1`.
 
-Положите свежий `telegram_api.tl` в `tl/`, обновите `tl/LAYER` и соберите проект заново.
-Генерировать код не нужно. Если сервер поменял поля, которые читает интерфейс, их придётся поправить
-в `TGNStore.m` и в контроллерах.
-
-## Лицензия
-
-GPL v2: код MtProtoKit и Telegram распространяется под GPL.
+Лицензия: GPL v2.
